@@ -1,6 +1,7 @@
 package autogun
 
 import (
+	"github.com/Carbonfrost/autogun/pkg/internal/build"
 	cli "github.com/Carbonfrost/joe-cli"
 )
 
@@ -18,6 +19,14 @@ func NewApp() *cli.App {
 			c.Stdout.WriteString("Hello, world!")
 			return nil
 		},
-		Version: "",
+		Flags: []*cli.Flag{
+			{
+				Name:     "chdir",
+				HelpText: "Change directory into the specified working {DIRECTORY}",
+				Value:    cli.String(),
+				Options:  cli.WorkingDirectory | cli.NonPersistent,
+			},
+		},
+		Version: build.Version,
 	}
 }

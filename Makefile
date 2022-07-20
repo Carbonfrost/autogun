@@ -7,7 +7,7 @@
 	-install-%
 
 BUILD_VERSION=$(shell git rev-parse --short HEAD)
-GO_LDFLAGS=-X 'github.com/Carbonfrost/autogun/internal/build.Version=$(BUILD_VERSION)'
+GO_LDFLAGS=-X 'github.com/Carbonfrost/autogun/pkg/internal/build.Version=$(BUILD_VERSION)'
 
 lint:
 	$(Q) go run honnef.co/go/tools/cmd/staticcheck -checks 'all,-ST*' $(shell go list ./...)
