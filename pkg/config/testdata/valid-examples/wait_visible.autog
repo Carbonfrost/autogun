@@ -1,0 +1,9 @@
+automation "wait_visible" {
+    navigate {
+        url = "https://example.com"
+    }
+
+    wait_visible {
+        selector = "#aubergine"
+    }
+}

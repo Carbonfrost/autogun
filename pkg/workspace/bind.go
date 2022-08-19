@@ -47,6 +47,10 @@ func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
 	switch t := task.(type) {
 	case *config.Navigate:
 		return chromedp.Navigate(t.URL)
+	case *config.WaitVisible:
+		return chromedp.WaitVisible(t.Selector)
+	case *config.Click:
+		return chromedp.Click(t.Selector)
 	case *config.Eval:
 		var msg json.RawMessage
 		res.Outputs[t.Name] = &msg

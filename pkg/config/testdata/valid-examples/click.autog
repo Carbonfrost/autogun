@@ -1,0 +1,9 @@
+automation "click" {
+    navigate {
+        url = "https://example.com"
+    }
+
+    click {
+        selector = "#olive"
+    }
+}

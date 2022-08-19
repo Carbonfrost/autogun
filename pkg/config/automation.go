@@ -22,6 +22,12 @@ var (
 				Type:       "eval",
 				LabelNames: []string{"name"},
 			},
+			{
+				Type: "click",
+			},
+			{
+				Type: "wait_visible",
+			},
 		},
 	}
 )
@@ -48,6 +54,20 @@ func decodeAutomationBlock(block *hcl.Block) (*Automation, hcl.Diagnostics) {
 
 		case "eval":
 			cfg, cfgDiags := decodeEvalBlock(block)
+			diags = append(diags, cfgDiags...)
+			if cfg != nil {
+				f.Tasks = append(f.Tasks, cfg)
+			}
+
+		case "wait_visible":
+			cfg, cfgDiags := decodeWaitVisibleBlock(block)
+			diags = append(diags, cfgDiags...)
+			if cfg != nil {
+				f.Tasks = append(f.Tasks, cfg)
+			}
+
+		case "click":
+			cfg, cfgDiags := decodeClickBlock(block)
 			diags = append(diags, cfgDiags...)
 			if cfg != nil {
 				f.Tasks = append(f.Tasks, cfg)
