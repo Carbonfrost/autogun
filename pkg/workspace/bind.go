@@ -48,9 +48,9 @@ func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
 	case *config.Navigate:
 		return chromedp.Navigate(t.URL)
 	case *config.WaitVisible:
-		return chromedp.WaitVisible(t.Selector)
+		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors)
 	case *config.Click:
-		return chromedp.Click(t.Selector)
+		return bindSelector(chromedp.Click, t.Selector, t.Selectors)
 	case *config.Eval:
 		var msg json.RawMessage
 		res.Outputs[t.Name] = &msg
@@ -58,6 +58,63 @@ func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
 	default:
 		panic(fmt.Errorf("unexpected task type %T", t))
 	}
+}
+
+func bindSelector(fn func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction, sel string, sels []*config.Selector) chromedp.Tasks {
+	if sel != "" {
+		sels = append(sels, &config.Selector{
+			Target: sel,
+			By:     config.BySearch,
+		})
+	}
+
+	tasks := make([]chromedp.Action, len(sels))
+	for i, s := range sels {
+		opts := make([]chromedp.QueryOption, 0)
+		if s.By != "" {
+			opts = append(opts, bindSelectorBy(s.By))
+		}
+		if s.On != "" {
+			opts = append(opts, bindSelectorOn(s.On))
+		}
+
+		tasks[i] = fn(s.Target, opts...)
+	}
+	return tasks
+}
+
+func bindSelectorBy(s config.SelectorBy) chromedp.QueryOption {
+	switch s {
+	case config.BySearch:
+		return chromedp.BySearch
+	case config.ByJSPath:
+		return chromedp.ByJSPath
+	case config.ByID:
+		return chromedp.ByID
+	case config.ByQuery:
+		return chromedp.ByQuery
+	case config.ByQueryAll:
+		return chromedp.ByQueryAll
+	}
+	return nil
+}
+
+func bindSelectorOn(s config.SelectorOn) chromedp.QueryOption {
+	switch s {
+	case config.OnReady:
+		return chromedp.NodeReady
+	case config.OnVisible:
+		return chromedp.NodeVisible
+	case config.OnNotVisible:
+		return chromedp.NodeNotVisible
+	case config.OnEnabled:
+		return chromedp.NodeEnabled
+	case config.OnSelected:
+		return chromedp.NodeSelected
+	case config.OnNotPresent:
+		return chromedp.NodeNotPresent
+	}
+	return nil
 }
 
 func (r *AutomationResult) bindAutomation(automation *config.Automation) []chromedp.Action {

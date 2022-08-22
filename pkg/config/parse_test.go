@@ -45,6 +45,29 @@ var _ = Describe("LoadConfigFile", func() {
 					PointTo(MatchFields(IgnoreExtras, Fields{
 						"Selector": Equal("#olive"),
 					}))),
+				"2": And(
+					BeAssignableToTypeOf(&config.Click{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Selectors": MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+							"0": And(
+								BeAssignableToTypeOf(&config.Selector{}),
+								PointTo(MatchFields(IgnoreExtras, Fields{
+									"Target": Equal("#raspberry"),
+								}))),
+						}),
+					}))),
+				"3": And(
+					BeAssignableToTypeOf(&config.Click{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Selectors": MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+							"0": And(
+								BeAssignableToTypeOf(&config.Selector{}),
+								PointTo(MatchFields(IgnoreExtras, Fields{
+									"By": Equal(config.BySearch),
+									"On": Equal(config.OnVisible),
+								}))),
+						}),
+					}))),
 			})),
 
 			Entry("wait_visible", "wait_visible.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{

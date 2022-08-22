@@ -6,4 +6,18 @@ automation "click" {
     click {
         selector = "#olive"
     }
+
+    click {
+        selector {
+            target = "#raspberry"
+        }
+    }
+
+    click {
+        selector {
+            target = "#raspberry"
+            by     = "SEARCH"
+            on     = "VISIBLE"
+        }
+    }
 }
