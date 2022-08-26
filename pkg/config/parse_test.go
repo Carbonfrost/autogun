@@ -4,12 +4,12 @@ import (
 	"os"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
-	"github.com/spf13/afero"
-
+	"github.com/hashicorp/hcl/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 	"github.com/onsi/gomega/types"
+	"github.com/spf13/afero"
 )
 
 var _ = Describe("LoadConfigFile", func() {
@@ -26,7 +26,7 @@ var _ = Describe("LoadConfigFile", func() {
 				"0": And(
 					BeAssignableToTypeOf(&config.Navigate{}),
 					PointTo(MatchFields(IgnoreExtras, Fields{
-						"URL": Equal("https://example.com"),
+						"URL": WithTransform(toString, Equal("https://example.com")),
 					}))),
 			})),
 
@@ -91,4 +91,9 @@ func validExample(hclFile string) (*config.File, error) {
 
 	p := config.NewParser(afero.NewIOFS(appFS))
 	return p.LoadConfigFile(".weyoun/site.hcl")
+}
+
+func toString(v interface{}) interface{} {
+	d, _ := v.(hcl.Expression).Value(nil)
+	return d.AsString()
 }

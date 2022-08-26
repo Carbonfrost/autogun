@@ -15,7 +15,7 @@ type Navigate struct {
 	DeclRange hcl.Range
 	NameRange hcl.Range
 	Name      string
-	URL       string
+	URL       hcl.Expression
 }
 
 type Eval struct {
@@ -123,8 +123,7 @@ func decodeNavigateBlock(block *hcl.Block) (*Navigate, hcl.Diagnostics) {
 	diags = append(diags, moreDiags...)
 
 	if attr, ok := content.Attributes["url"]; ok {
-		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &f.URL)
-		diags = append(diags, moreDiags...)
+		f.URL = attr.Expr
 	}
 
 	return f, diags

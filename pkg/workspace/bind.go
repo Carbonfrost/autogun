@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/config"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/chromedp/chromedp"
+	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/gocty"
 )
 
 type AutomationResult struct {
@@ -46,18 +49,39 @@ func RunAutomation() cli.Action {
 func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
 	switch t := task.(type) {
 	case *config.Navigate:
-		return chromedp.Navigate(t.URL)
+		return chromedp.ActionFunc(func(c context.Context) error {
+			v, err := evalContext(c, t.URL)
+			if err != nil {
+				return nil
+			}
+			fmt.Printf("Navigate to %s\n", v.AsString())
+			return chromedp.Navigate(v.AsString()).Do(c)
+		})
 	case *config.WaitVisible:
 		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors)
 	case *config.Click:
 		return bindSelector(chromedp.Click, t.Selector, t.Selectors)
 	case *config.Eval:
-		var msg json.RawMessage
-		res.Outputs[t.Name] = &msg
-		return chromedp.Evaluate(t.Script, &msg)
+		return chromedp.ActionFunc(func(c context.Context) error {
+			var msg json.RawMessage
+			res.Outputs[t.Name] = &msg
+			err := chromedp.Evaluate(t.Script, &msg).Do(c)
+			fmt.Printf("Evaluate %v\n", string(msg))
+			evalContextFrom(c).Variables[t.Name] = umarshalData(msg)
+			return err
+		})
+
 	default:
 		panic(fmt.Errorf("unexpected task type %T", t))
 	}
+}
+
+func umarshalData(msg json.RawMessage) cty.Value {
+	// TODO Additional types might occur
+	m := map[string]string{}
+	_ = json.Unmarshal(msg, &m)
+	v, _ := gocty.ToCtyValue(m, cty.Map(cty.String))
+	return v
 }
 
 func bindSelector(fn func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction, sel string, sels []*config.Selector) chromedp.Tasks {
