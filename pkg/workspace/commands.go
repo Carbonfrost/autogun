@@ -18,7 +18,7 @@ func SetupWorkspace() cli.Action {
 			ws := &Workspace{
 				Directory: ".",
 			}
-			c.Context = SetContextWorkspace(c.Context, ws)
+			c.SetContext(SetContextWorkspace(c.Context(), ws))
 			return nil
 		},
 	}
