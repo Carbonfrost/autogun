@@ -8,9 +8,9 @@ require (
 	github.com/Carbonfrost/joe-cli v0.6.0
 	github.com/chromedp/chromedp v0.12.1
 	github.com/hashicorp/hcl/v2 v2.23.0
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.10.0
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
 	github.com/onsi/ginkgo/v2 v2.21.0
-	github.com/onsi/gomega v1.35.1
+	github.com/onsi/gomega v1.36.1
 	github.com/spf13/afero v1.9.5
 	github.com/zclconf/go-cty v1.16.2
 	honnef.co/go/tools v0.5.1
