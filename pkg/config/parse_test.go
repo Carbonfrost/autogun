@@ -2,6 +2,7 @@ package config_test
 
 import (
 	"os"
+	"time"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
 	"github.com/hashicorp/hcl/v2"
@@ -75,6 +76,10 @@ var _ = Describe("LoadConfigFile", func() {
 					BeAssignableToTypeOf(&config.WaitVisible{}),
 					PointTo(MatchFields(IgnoreExtras, Fields{
 						"Selector": Equal("#aubergine"),
+						"Options": PointTo(MatchFields(IgnoreExtras, Fields{
+							"AtLeast":       PointTo(Equal(1)),
+							"RetryInterval": PointTo(Equal(5 * time.Second)),
+						})),
 					}))),
 			})),
 		)

@@ -146,6 +146,12 @@ func andSelectorQueryAttributes(content *hcl.BodyContent, dst selectorAction) hc
 			if cfg != nil {
 				dst.addSelector(cfg)
 			}
+		case "options":
+			cfg, cfgDiags := decodeOptionsBlock(block)
+			diags = append(diags, cfgDiags...)
+			if cfg != nil {
+				dst.setOptions(cfg)
+			}
 
 		default:
 			continue

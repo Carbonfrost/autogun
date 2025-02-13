@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
@@ -29,18 +30,27 @@ type Click struct {
 	DeclRange hcl.Range
 	Selector  string
 	Selectors []*Selector
+	Options   *Options
 }
 
 type WaitVisible struct {
 	DeclRange hcl.Range
 	Selector  string
 	Selectors []*Selector
+	Options   *Options
+}
+
+type Options struct {
+	DeclRange     hcl.Range
+	RetryInterval *time.Duration
+	AtLeast       *int
 }
 
 type selectorAction interface {
 	Task
 	setSelector(string)
 	addSelector(*Selector) error
+	setOptions(*Options) error
 }
 
 var (
@@ -64,12 +74,24 @@ var (
 		},
 		Blocks: []hcl.BlockHeaderSchema{
 			{Type: "selector"},
+			{Type: "options"},
 		},
 	}
 
 	waitVisibleBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "selector"},
+			{Type: "options"},
+		},
+	}
+
+	optionsBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "at_least"},
+			{Name: "retry_interval"},
 		},
 		Blocks: []hcl.BlockHeaderSchema{},
 	}
@@ -142,6 +164,40 @@ func decodeWaitVisibleBlock(block *hcl.Block) (*WaitVisible, hcl.Diagnostics) {
 	return f, diags
 }
 
+func decodeOptionsBlock(block *hcl.Block) (*Options, hcl.Diagnostics) {
+	var diags hcl.Diagnostics
+	f := &Options{
+		DeclRange: block.DefRange,
+	}
+
+	content, _, moreDiags := block.Body.PartialContent(optionsBlockSchema)
+	diags = append(diags, moreDiags...)
+	if attr, ok := content.Attributes["retry_interval"]; ok {
+		var text string
+		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &text)
+		if text != "" {
+			dur, err := time.ParseDuration(text)
+			f.RetryInterval = &dur
+			if err != nil {
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Cannot convert duration",
+					Detail:   fmt.Sprintf("Cannot convert duration: %s", err.Error()),
+					Subject:  attr.Expr.StartRange().Ptr(),
+					Context:  attr.Expr.Range().Ptr(),
+				})
+			}
+		}
+		diags = append(diags, moreDiags...)
+	}
+	if attr, ok := content.Attributes["at_least"]; ok {
+		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &f.AtLeast)
+		diags = append(diags, moreDiags...)
+	}
+
+	return f, diags
+}
+
 func (c *Click) setSelector(s string) {
 	c.Selector = s
 }
@@ -151,12 +207,22 @@ func (c *Click) addSelector(s *Selector) error {
 	return nil
 }
 
+func (c *Click) setOptions(o *Options) error {
+	c.Options = o
+	return nil
+}
+
 func (w *WaitVisible) setSelector(s string) {
 	w.Selector = s
 }
 
 func (w *WaitVisible) addSelector(s *Selector) error {
 	w.Selectors = append(w.Selectors, s)
+	return nil
+}
+
+func (w *WaitVisible) setOptions(o *Options) error {
+	w.Options = o
 	return nil
 }
 

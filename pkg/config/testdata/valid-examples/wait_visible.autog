@@ -5,5 +5,10 @@ automation "wait_visible" {
 
     wait_visible {
         selector = "#aubergine"
+
+        options {
+            retry_interval = "5s"
+            at_least = 1
+        }
     }
 }

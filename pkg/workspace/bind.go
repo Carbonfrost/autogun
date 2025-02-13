@@ -33,9 +33,9 @@ func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
 			return chromedp.Navigate(v.AsString()).Do(c)
 		})
 	case *config.WaitVisible:
-		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors)
+		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
 	case *config.Click:
-		return bindSelector(chromedp.Click, t.Selector, t.Selectors)
+		return bindSelector(chromedp.Click, t.Selector, t.Selectors, t.Options)
 	case *config.Eval:
 		return chromedp.ActionFunc(func(c context.Context) error {
 			var msg json.RawMessage
@@ -59,7 +59,7 @@ func umarshalData(msg json.RawMessage) cty.Value {
 	return v
 }
 
-func bindSelector(fn func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction, sel string, sels []*config.Selector) chromedp.Tasks {
+func bindSelector(fn func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction, sel string, sels []*config.Selector, options *config.Options) chromedp.Tasks {
 	if sel != "" {
 		sels = append(sels, &config.Selector{
 			Target: sel,
@@ -76,6 +76,7 @@ func bindSelector(fn func(interface{}, ...chromedp.QueryOption) chromedp.QueryAc
 		if s.On != "" {
 			opts = append(opts, bindSelectorOn(s.On))
 		}
+		opts = append(opts, bindQueryOptions(options)...)
 
 		tasks[i] = fn(s.Target, opts...)
 	}
@@ -114,6 +115,19 @@ func bindSelectorOn(s config.SelectorOn) chromedp.QueryOption {
 		return chromedp.NodeNotPresent
 	}
 	return nil
+}
+
+func bindQueryOptions(opts *config.Options) (results []chromedp.QueryOption) {
+	if opts == nil {
+		return
+	}
+	if opts.RetryInterval != nil {
+		results = append(results, chromedp.RetryInterval(*opts.RetryInterval))
+	}
+	if opts.AtLeast != nil {
+		results = append(results, chromedp.AtLeast(*opts.AtLeast))
+	}
+	return
 }
 
 func (r *AutomationResult) bindAutomation(automation *config.Automation) []chromedp.Action {
