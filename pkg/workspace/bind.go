@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
-	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/chromedp/chromedp"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -20,29 +18,6 @@ type AutomationResult struct {
 func NewAutomationResult() *AutomationResult {
 	return &AutomationResult{
 		Outputs: map[string]*json.RawMessage{},
-	}
-}
-
-func RunAutomation() cli.Action {
-	return cli.Setup{
-		Action: func(c *cli.Context) error {
-			ws := FromContext(c)
-			err := ws.Load(c.FileSet("files").Files...)
-			if err != nil {
-				return err
-			}
-
-			for _, auto := range ws.Automations() {
-				res, err := ws.executeCore(auto)
-				if err != nil {
-					return err
-				}
-
-				data, _ := json.MarshalIndent(res.Outputs, "", "    ")
-				os.Stdout.Write(data)
-			}
-			return nil
-		},
 	}
 }
 

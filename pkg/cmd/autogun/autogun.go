@@ -2,7 +2,6 @@ package autogun
 
 import (
 	"github.com/Carbonfrost/autogun/pkg/internal/build"
-	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/color"
 )
@@ -19,7 +18,7 @@ func NewApp() *cli.App {
 		Uses: cli.Pipeline(
 			cli.Sorted,
 			color.Options{},
-			workspace.SetupWorkspace(),
+			SetupWorkspace(),
 		),
 		Flags: []*cli.Flag{
 			{
@@ -34,8 +33,8 @@ func NewApp() *cli.App {
 				Name:     "run",
 				HelpText: "Run the specified automation files",
 				Uses: cli.Pipeline(
-					workspace.FlagsAndArgs(),
-					workspace.RunAutomation(),
+					FlagsAndArgs(),
+					RunAutomation(),
 				),
 				Args: []*cli.Arg{
 					{

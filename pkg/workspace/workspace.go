@@ -12,10 +12,6 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-const (
-	workspaceKey contextKey = "workspaceKey"
-)
-
 type Workspace struct {
 	Directory string
 	Allocator *Allocator
@@ -26,16 +22,6 @@ type Workspace struct {
 type workspaceState struct {
 	Automations     []*config.Automation
 	didImplicitLoad bool
-}
-
-// Workspace gets the Workspace from the context
-func FromContext(ctx context.Context) *Workspace {
-	return ctx.Value(workspaceKey).(*Workspace)
-}
-
-// SetContextWorkspace will set the Workspace
-func SetContextWorkspace(ctx context.Context, ws *Workspace) context.Context {
-	return context.WithValue(ctx, workspaceKey, ws)
 }
 
 func (w *Workspace) Load(files ...string) error {
@@ -82,13 +68,14 @@ func (w *Workspace) Execute(automation string) (*AutomationResult, error) {
 	if auto == nil {
 		return nil, fmt.Errorf("automation not found %q", automation)
 	}
-	return w.executeCore(auto)
+	return w.ExecuteCore(auto)
 }
 
-func (w *Workspace) executeCore(auto *config.Automation) (*AutomationResult, error) {
+// TODO This should not be API
+func (w *Workspace) ExecuteCore(auto *config.Automation) (*AutomationResult, error) {
 	res := NewAutomationResult()
 	tasks := res.bindAutomation(auto)
-	ctx, cancel := w.ensureAllocator().newContext(context.Background())
+	ctx, cancel := w.EnsureAllocator().newContext(context.Background())
 	defer cancel()
 
 	return res, chromedp.Run(ctx, tasks...)
@@ -160,7 +147,8 @@ func (w *Workspace) state() *workspaceState {
 	return w.stateCache
 }
 
-func (w *Workspace) ensureAllocator() *Allocator {
+// TODO This should not be API
+func (w *Workspace) EnsureAllocator() *Allocator {
 	if w.Allocator == nil {
 		w.Allocator = &Allocator{}
 	}

@@ -16,10 +16,6 @@ type Allocator struct {
 	BrowserURL string
 }
 
-func allocatorFromContext(c context.Context) *Allocator {
-	return FromContext(c).ensureAllocator()
-}
-
 func (a *Allocator) newContext(parent context.Context) (context.Context, context.CancelFunc) {
 	parent = context.WithValue(parent, evalContextKey, &hcl.EvalContext{})
 	if a.BrowserURL != "" {
