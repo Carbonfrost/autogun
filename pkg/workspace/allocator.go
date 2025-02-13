@@ -13,7 +13,7 @@ type contextKey string
 const evalContextKey contextKey = "evalContext"
 
 type Allocator struct {
-	URL string
+	BrowserURL string
 }
 
 func allocatorFromContext(c context.Context) *Allocator {
@@ -22,8 +22,8 @@ func allocatorFromContext(c context.Context) *Allocator {
 
 func (a *Allocator) newContext(parent context.Context) (context.Context, context.CancelFunc) {
 	parent = context.WithValue(parent, evalContextKey, &hcl.EvalContext{})
-	if a.URL != "" {
-		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(parent, a.URL)
+	if a.BrowserURL != "" {
+		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(parent, a.BrowserURL)
 		res, cancelInner := chromedp.NewContext(
 			allocatorContext,
 		)
@@ -38,8 +38,8 @@ func (a *Allocator) newContext(parent context.Context) (context.Context, context
 	)
 }
 
-func (a *Allocator) SetURL(s string) error {
-	a.URL = s
+func (a *Allocator) SetBrowserURL(s string) error {
+	a.BrowserURL = s
 	return nil
 }
 

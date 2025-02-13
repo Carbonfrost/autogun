@@ -27,20 +27,20 @@ func SetupWorkspace() cli.Action {
 func FlagsAndArgs() cli.Action {
 	return cli.Pipeline(
 		cli.AddFlags([]*cli.Flag{
-			{Uses: SetURL()},
+			{Uses: SetBrowserURL()},
 		}...),
 	)
 
 }
 
-func SetURL(v ...string) cli.Action {
+func SetBrowserURL(v ...string) cli.Action {
 	return cli.Pipeline(
 		&cli.Prototype{
 			Name:     "browser",
 			Aliases:  []string{"b"},
 			HelpText: "Connect to the running browser instance by {URL}",
 		},
-		withBinding((*Allocator).SetURL, v),
+		withBinding((*Allocator).SetBrowserURL, v),
 	)
 }
 
