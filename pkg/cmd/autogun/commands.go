@@ -3,16 +3,11 @@ package autogun
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"os"
 
 	"github.com/Carbonfrost/autogun/pkg/contextual"
 	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
-)
-
-var (
-	expectedOneArg = errors.New("expected zero or one arguments")
 )
 
 func FlagsAndArgs() cli.Action {
@@ -54,19 +49,12 @@ func SetBrowserURL(v ...string) cli.Action {
 			Aliases:  []string{"b"},
 			HelpText: "Connect to the running browser instance by {URL}",
 		},
-		withBinding((*workspace.Allocator).SetBrowserURL, v),
+		withBinding((*workspace.Allocator).SetBrowserURL, v...),
 	)
 }
 
-func withBinding[V any](binder func(*workspace.Allocator, V) error, args []V) cli.Action {
-	switch len(args) {
-	case 0:
-		return cli.BindContext(allocatorFromContext, binder)
-	case 1:
-		return cli.BindContext(allocatorFromContext, binder, args[0])
-	default:
-		panic(expectedOneArg)
-	}
+func withBinding[V any](binder func(*workspace.Allocator, V) error, args ...V) cli.Action {
+	return cli.BindContext(allocatorFromContext, binder, args...)
 }
 
 func allocatorFromContext(c context.Context) *workspace.Allocator {
