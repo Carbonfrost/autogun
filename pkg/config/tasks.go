@@ -46,7 +46,7 @@ type Options struct {
 	AtLeast       *int
 }
 
-type selectorAction interface {
+type selectorTask interface {
 	Task
 	setSelector(string)
 	addSelector(*Selector) error
@@ -242,5 +242,5 @@ func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnost
 
 var _ Task = (*Navigate)(nil)
 var _ Task = (*Eval)(nil)
-var _ selectorAction = (*WaitVisible)(nil)
-var _ selectorAction = (*Click)(nil)
+var _ selectorTask = (*WaitVisible)(nil)
+var _ selectorTask = (*Click)(nil)

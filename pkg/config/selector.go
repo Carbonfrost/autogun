@@ -127,7 +127,7 @@ func parseSelectorOn(s string, dst *SelectorOn, subject *hcl.Range) hcl.Diagnost
 	}
 }
 
-func andSelectorQueryAttributes(content *hcl.BodyContent, dst selectorAction) hcl.Diagnostics {
+func andSelectorQueryAttributes(content *hcl.BodyContent, dst selectorTask) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 
 	if attr, ok := content.Attributes["selector"]; ok {
