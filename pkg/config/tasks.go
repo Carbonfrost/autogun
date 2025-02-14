@@ -196,10 +196,8 @@ func decodeScreenshotBlock(block *hcl.Block) (*Screenshot, hcl.Diagnostics) {
 		supportsPartialContentSchema(
 			screenshotBlockSchema,
 			supportsSelector(s),
-			// 	// withAttribute("script", &s.Script),
 		),
 	)
-
 }
 
 func decodeOptionsBlock(block *hcl.Block) (*Options, hcl.Diagnostics) {

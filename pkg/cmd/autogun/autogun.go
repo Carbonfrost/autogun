@@ -27,6 +27,7 @@ func NewApp() *cli.App {
 				Value:    new(cli.File),
 				Options:  cli.WorkingDirectory | cli.NonPersistent,
 			},
+			{Uses: ListDevices()},
 		},
 		Commands: []*cli.Command{
 			{
