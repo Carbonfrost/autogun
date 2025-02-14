@@ -82,6 +82,15 @@ var _ = Describe("LoadConfigFile", func() {
 						})),
 					}))),
 			})),
+
+			Entry("screenshot", "screenshot.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"1": And(
+					BeAssignableToTypeOf(&config.Screenshot{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Name":     Equal("label.png"),
+						"Selector": Equal("#aubergine"),
+					}))),
+			})),
 		)
 	})
 })

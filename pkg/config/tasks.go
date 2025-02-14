@@ -40,6 +40,15 @@ type WaitVisible struct {
 	Options   *Options
 }
 
+type Screenshot struct {
+	DeclRange hcl.Range
+	NameRange hcl.Range
+	Name      string
+	Selector  string
+	Selectors []*Selector
+	Options   *Options
+}
+
 type Options struct {
 	DeclRange     hcl.Range
 	RetryInterval *time.Duration
@@ -81,6 +90,19 @@ var (
 	waitVisibleBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "selector"},
+			{Type: "options"},
+		},
+	}
+
+	screenshotBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "selector"},
+			{Name: "output_file"}, // FIXME save to this file; also available as a var?
+			// FIXME When selector and selectors are empty, captures whole viewport
+			// using CaptureScreenshot(*[]byte)
 		},
 		Blocks: []hcl.BlockHeaderSchema{
 			{Type: "selector"},
@@ -164,6 +186,22 @@ func decodeWaitVisibleBlock(block *hcl.Block) (*WaitVisible, hcl.Diagnostics) {
 	return f, diags
 }
 
+func decodeScreenshotBlock(block *hcl.Block) (*Screenshot, hcl.Diagnostics) {
+	s := &Screenshot{}
+	return reduceTask(
+		s,
+		block,
+		supportsDeclRange(&s.DeclRange),
+		supportsOptionalLabel(&s.Name, &s.NameRange),
+		supportsPartialContentSchema(
+			screenshotBlockSchema,
+			supportsSelector(s),
+			// 	// withAttribute("script", &s.Script),
+		),
+	)
+
+}
+
 func decodeOptionsBlock(block *hcl.Block) (*Options, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	f := &Options{
@@ -226,10 +264,25 @@ func (w *WaitVisible) setOptions(o *Options) error {
 	return nil
 }
 
+func (s *Screenshot) setSelector(t string) {
+	s.Selector = t
+}
+
+func (s *Screenshot) addSelector(t *Selector) error {
+	s.Selectors = append(s.Selectors, t)
+	return nil
+}
+
+func (s *Screenshot) setOptions(o *Options) error {
+	s.Options = o
+	return nil
+}
+
 func (*Navigate) taskSigil()    {}
 func (*Eval) taskSigil()        {}
 func (*Click) taskSigil()       {}
 func (*WaitVisible) taskSigil() {}
+func (*Screenshot) taskSigil()  {}
 
 func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnostic {
 	return &hcl.Diagnostic{
@@ -244,3 +297,4 @@ var _ Task = (*Navigate)(nil)
 var _ Task = (*Eval)(nil)
 var _ selectorTask = (*WaitVisible)(nil)
 var _ selectorTask = (*Click)(nil)
+var _ selectorTask = (*Screenshot)(nil)

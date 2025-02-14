@@ -28,6 +28,10 @@ var (
 			{
 				Type: "wait_visible",
 			},
+			{
+				Type:       "screenshot",
+				LabelNames: []string{"name"},
+			},
 		},
 	}
 )
@@ -68,6 +72,13 @@ func decodeAutomationBlock(block *hcl.Block) (*Automation, hcl.Diagnostics) {
 
 		case "click":
 			cfg, cfgDiags := decodeClickBlock(block)
+			diags = append(diags, cfgDiags...)
+			if cfg != nil {
+				f.Tasks = append(f.Tasks, cfg)
+			}
+
+		case "screenshot":
+			cfg, cfgDiags := decodeScreenshotBlock(block)
 			diags = append(diags, cfgDiags...)
 			if cfg != nil {
 				f.Tasks = append(f.Tasks, cfg)

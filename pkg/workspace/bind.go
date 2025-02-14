@@ -1,9 +1,13 @@
 package workspace
 
 import (
+	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
 	"github.com/chromedp/chromedp"
@@ -12,12 +16,17 @@ import (
 )
 
 type AutomationResult struct {
-	Outputs map[string]*json.RawMessage
+	Outputs     map[string]*json.RawMessage
+	OutputFiles map[string]*[]byte
 }
+
+type produceQueryActionFunc = func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction
+type produceFileUserActionFunc = func(*[]byte) chromedp.Action
 
 func NewAutomationResult() *AutomationResult {
 	return &AutomationResult{
-		Outputs: map[string]*json.RawMessage{},
+		Outputs:     map[string]*json.RawMessage{},
+		OutputFiles: map[string]*[]byte{},
 	}
 }
 
@@ -36,6 +45,19 @@ func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
 		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
 	case *config.Click:
 		return bindSelector(chromedp.Click, t.Selector, t.Selectors, t.Options)
+	case *config.Screenshot:
+		filename := cmp.Or(t.Name, "screenshot.png")
+		if t.Selector == "" && len(t.Selectors) == 0 {
+			return res.requestOutputFile(filename, chromedp.CaptureScreenshot)
+		}
+
+		return bindSelector(func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
+			curry := func(file *[]byte) chromedp.Action {
+				return chromedp.Screenshot(sel, file, opts...)
+			}
+			return res.requestOutputFile(filename, curry)
+		}, t.Selector, t.Selectors, t.Options)
+
 	case *config.Eval:
 		return chromedp.ActionFunc(func(c context.Context) error {
 			var msg json.RawMessage
@@ -59,7 +81,7 @@ func umarshalData(msg json.RawMessage) cty.Value {
 	return v
 }
 
-func bindSelector(fn func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction, sel string, sels []*config.Selector, options *config.Options) chromedp.Tasks {
+func bindSelector(fn produceQueryActionFunc, sel string, sels []*config.Selector, options *config.Options) chromedp.Tasks {
 	if sel != "" {
 		sels = append(sels, &config.Selector{
 			Target: sel,
@@ -136,4 +158,31 @@ func (r *AutomationResult) bindAutomation(automation *config.Automation) []chrom
 		actions = append(actions, bindTask(r, t))
 	}
 	return actions
+}
+
+// TODO This should not necessarily be API
+func (r *AutomationResult) PersistOutputFiles() {
+	for name, f := range r.OutputFiles {
+		file, err := os.Create(name)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error persisting output files: %v\n", err)
+			continue
+		}
+
+		_, err = io.Copy(file, bytes.NewReader(*f))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error persisting output files: %v\n", err)
+			continue
+		}
+	}
+}
+
+func (r *AutomationResult) requestOutputFile(name string, fn produceFileUserActionFunc) chromedp.Action {
+	return chromedp.ActionFunc(func(c context.Context) error {
+		file := make([]byte, 2048)
+		r.OutputFiles[name] = &file
+
+		act := fn(&file)
+		return act.Do(c)
+	})
 }

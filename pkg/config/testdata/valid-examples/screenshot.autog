@@ -1,0 +1,9 @@
+automation "screenshot" {
+    navigate {
+        url = "https://example.com"
+    }
+
+    screenshot "label.png" {
+        selector = "#aubergine"
+    }
+}

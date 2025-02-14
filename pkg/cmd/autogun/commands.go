@@ -36,6 +36,8 @@ func RunAutomation() cli.Action {
 
 				data, _ := json.MarshalIndent(res.Outputs, "", "    ")
 				os.Stdout.Write(data)
+
+				res.PersistOutputFiles()
 			}
 			return nil
 		},
