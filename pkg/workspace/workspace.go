@@ -74,8 +74,10 @@ func (w *Workspace) Execute(automation string) (*AutomationResult, error) {
 // TODO This should not be API
 func (w *Workspace) ExecuteCore(auto *config.Automation) (*AutomationResult, error) {
 	res := NewAutomationResult()
-	tasks := res.bindAutomation(auto)
-	ctx, cancel := w.EnsureAllocator().newContext(context.Background())
+	tasks := bindAutomation(auto)
+	ctx, cancel := w.EnsureAllocator().newContext(
+		withAutomationResult(context.Background(), res),
+	)
 	defer cancel()
 
 	return res, chromedp.Run(ctx, tasks...)

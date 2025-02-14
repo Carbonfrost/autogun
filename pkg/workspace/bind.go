@@ -30,7 +30,7 @@ func NewAutomationResult() *AutomationResult {
 	}
 }
 
-func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
+func bindTask(task config.Task) chromedp.Action {
 	switch t := task.(type) {
 	case *config.Navigate:
 		return chromedp.ActionFunc(func(c context.Context) error {
@@ -48,18 +48,19 @@ func bindTask(res *AutomationResult, task config.Task) chromedp.Action {
 	case *config.Screenshot:
 		filename := cmp.Or(t.Name, "screenshot.png")
 		if t.Selector == "" && len(t.Selectors) == 0 {
-			return res.requestOutputFile(filename, chromedp.CaptureScreenshot)
+			return requestOutputFile(filename, chromedp.CaptureScreenshot)
 		}
 
 		return bindSelector(func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
 			curry := func(file *[]byte) chromedp.Action {
 				return chromedp.Screenshot(sel, file, opts...)
 			}
-			return res.requestOutputFile(filename, curry)
+			return requestOutputFile(filename, curry)
 		}, t.Selector, t.Selectors, t.Options)
 
 	case *config.Eval:
 		return chromedp.ActionFunc(func(c context.Context) error {
+			res := mustAutomationResult(c)
 			var msg json.RawMessage
 			res.Outputs[t.Name] = &msg
 			err := chromedp.Evaluate(t.Script, &msg).Do(c)
@@ -152,10 +153,10 @@ func bindQueryOptions(opts *config.Options) (results []chromedp.QueryOption) {
 	return
 }
 
-func (r *AutomationResult) bindAutomation(automation *config.Automation) []chromedp.Action {
+func bindAutomation(automation *config.Automation) []chromedp.Action {
 	actions := make([]chromedp.Action, 0)
 	for _, t := range automation.Tasks {
-		actions = append(actions, bindTask(r, t))
+		actions = append(actions, bindTask(t))
 	}
 	return actions
 }
@@ -177,12 +178,21 @@ func (r *AutomationResult) PersistOutputFiles() {
 	}
 }
 
-func (r *AutomationResult) requestOutputFile(name string, fn produceFileUserActionFunc) chromedp.Action {
+func requestOutputFile(name string, fn produceFileUserActionFunc) chromedp.Action {
 	return chromedp.ActionFunc(func(c context.Context) error {
+		r := mustAutomationResult(c)
 		file := make([]byte, 2048)
 		r.OutputFiles[name] = &file
 
 		act := fn(&file)
 		return act.Do(c)
 	})
+}
+
+func mustAutomationResult(c context.Context) *AutomationResult {
+	return c.Value(automationResultKey).(*AutomationResult)
+}
+
+func withAutomationResult(c context.Context, ar *AutomationResult) context.Context {
+	return context.WithValue(c, automationResultKey, ar)
 }

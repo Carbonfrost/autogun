@@ -11,6 +11,7 @@ import (
 type contextKey string
 
 const evalContextKey contextKey = "evalContext"
+const automationResultKey contextKey = "automationResult"
 
 type Allocator struct {
 	BrowserURL string
