@@ -32,18 +32,24 @@ func NewApp() *cli.App {
 		Commands: []*cli.Command{
 			{
 				Name:     "run",
-				HelpText: "Run the specified automation files",
-				Uses: cli.Pipeline(
-					FlagsAndArgs(),
-					RunAutomation(),
-				),
+				HelpText: "Run the specified automations",
 				Args: []*cli.Arg{
 					{
-						Name:  "files",
-						Value: new(cli.FileSet),
+						Name:  "sources",
+						Value: cli.List(),
 						NArg:  cli.TakeUntilNextFlag,
 					},
+					{
+						Name: "expression",
+						Value: &cli.Expression{
+							Exprs: Exprs(),
+						},
+					},
 				},
+				Uses: cli.Pipeline(
+					FlagsAndArgs(),
+				),
+				Action: RunAutomation,
 			},
 		},
 		Version: build.Version,

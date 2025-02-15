@@ -10,11 +10,18 @@ type Task interface {
 	Do(context.Context) error
 }
 
+// TaskFunc implements a task from function
+type TaskFunc func(context.Context) error
+
 // Automation is a multi-step automated process
 type Automation struct {
 
 	// Tasks provides the tasks in the automation
 	Tasks []Task
+}
+
+func (f TaskFunc) Do(c context.Context) error {
+	return f(c)
 }
 
 func (a *Automation) Do(c context.Context) error {

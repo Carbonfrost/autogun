@@ -16,10 +16,10 @@ type Result struct {
 	OutputFiles map[string]*[]byte
 }
 
-func Execute(allocator *Allocator, a *Automation) (*Result, error) {
+func Execute(ctx context.Context, allocator *Allocator, a *Automation) (*Result, error) {
 	res := newResult()
 	ctx, cancel := allocator.newContext(
-		withAutomationResult(context.Background(), res),
+		withAutomationResult(ctx, res),
 	)
 	defer cancel()
 

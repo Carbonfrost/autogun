@@ -2,10 +2,8 @@ package autogun
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"maps"
-	"os"
 	"slices"
 	"strings"
 
@@ -35,31 +33,6 @@ func FlagsAndArgs() cli.Action {
 			{Uses: SetBrowserURL()},
 		}...),
 	)
-}
-
-func RunAutomation() cli.Action {
-	return cli.Setup{
-		Action: func(c *cli.Context) error {
-			ws := contextual.Workspace(c)
-			err := ws.Load(c.FileSet("files").Files...)
-			if err != nil {
-				return err
-			}
-
-			for _, auto := range ws.Automations() {
-				res, err := ws.ExecuteCore(auto)
-				if err != nil {
-					return err
-				}
-
-				data, _ := json.MarshalIndent(res.Outputs, "", "    ")
-				os.Stdout.Write(data)
-
-				res.PersistOutputFiles()
-			}
-			return nil
-		},
-	}
 }
 
 func ListDevices() cli.Action {

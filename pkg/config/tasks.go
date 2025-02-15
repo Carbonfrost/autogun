@@ -100,9 +100,6 @@ var (
 	screenshotBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
-			{Name: "output_file"}, // FIXME save to this file; also available as a var?
-			// FIXME When selector and selectors are empty, captures whole viewport
-			// using CaptureScreenshot(*[]byte)
 		},
 		Blocks: []hcl.BlockHeaderSchema{
 			{Type: "selector"},

@@ -1,7 +1,6 @@
 package workspace
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -55,28 +54,6 @@ func (w *Workspace) automation(name string) *config.Automation {
 		}
 	}
 	return nil
-}
-
-func (w *Workspace) Execute(automation string) (*automation.Result, error) {
-	err := w.load()
-	if err != nil {
-		return nil, err
-	}
-
-	auto := w.automation(automation)
-	if auto == nil {
-		return nil, fmt.Errorf("automation not found %q", automation)
-	}
-	return w.ExecuteCore(auto)
-}
-
-// TODO This should not be API
-func (w *Workspace) ExecuteCore(auto *config.Automation) (*automation.Result, error) {
-	tasks, err := automation.Bind(auto)
-	if err != nil {
-		return nil, err
-	}
-	return automation.Execute(w.EnsureAllocator(), tasks)
 }
 
 // Dir gets the workspace directory, normalized
