@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/contextual"
-	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/chromedp/chromedp/device"
 )
@@ -84,14 +84,14 @@ func SetBrowserURL(v ...string) cli.Action {
 			Aliases:  []string{"b"},
 			HelpText: "Connect to the running browser instance by {URL}",
 		},
-		withBinding((*workspace.Allocator).SetBrowserURL, v...),
+		withBinding((*automation.Allocator).SetBrowserURL, v...),
 	)
 }
 
-func withBinding[V any](binder func(*workspace.Allocator, V) error, args ...V) cli.Action {
+func withBinding[V any](binder func(*automation.Allocator, V) error, args ...V) cli.Action {
 	return cli.BindContext(allocatorFromContext, binder, args...)
 }
 
-func allocatorFromContext(c context.Context) *workspace.Allocator {
+func allocatorFromContext(c context.Context) *automation.Allocator {
 	return contextual.Workspace(c).EnsureAllocator()
 }

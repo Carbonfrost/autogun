@@ -1,0 +1,30 @@
+package automation
+
+import (
+	"context"
+)
+
+// Task provides the basis of a step in the automation
+type Task interface {
+	// Do executes the action using the provided context and frame handler.
+	Do(context.Context) error
+}
+
+// Automation is a multi-step automated process
+type Automation struct {
+
+	// Tasks provides the tasks in the automation
+	Tasks []Task
+}
+
+func (a *Automation) Do(c context.Context) error {
+	for _, task := range a.Tasks {
+		err := task.Do(c)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+var _ Task = (*Automation)(nil)

@@ -1,20 +1,19 @@
 package workspace
 
 import (
-	"context"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/config"
-	"github.com/chromedp/chromedp"
 )
 
 type Workspace struct {
 	Directory string
-	Allocator *Allocator
+	Allocator *automation.Allocator
 
 	stateCache *workspaceState
 }
@@ -58,7 +57,7 @@ func (w *Workspace) automation(name string) *config.Automation {
 	return nil
 }
 
-func (w *Workspace) Execute(automation string) (*AutomationResult, error) {
+func (w *Workspace) Execute(automation string) (*automation.Result, error) {
 	err := w.load()
 	if err != nil {
 		return nil, err
@@ -72,15 +71,12 @@ func (w *Workspace) Execute(automation string) (*AutomationResult, error) {
 }
 
 // TODO This should not be API
-func (w *Workspace) ExecuteCore(auto *config.Automation) (*AutomationResult, error) {
-	res := NewAutomationResult()
-	tasks := bindAutomation(auto)
-	ctx, cancel := w.EnsureAllocator().newContext(
-		withAutomationResult(context.Background(), res),
-	)
-	defer cancel()
-
-	return res, chromedp.Run(ctx, tasks...)
+func (w *Workspace) ExecuteCore(auto *config.Automation) (*automation.Result, error) {
+	tasks, err := automation.Bind(auto)
+	if err != nil {
+		return nil, err
+	}
+	return automation.Execute(w.EnsureAllocator(), tasks)
 }
 
 // Dir gets the workspace directory, normalized
@@ -150,9 +146,9 @@ func (w *Workspace) state() *workspaceState {
 }
 
 // TODO This should not be API
-func (w *Workspace) EnsureAllocator() *Allocator {
+func (w *Workspace) EnsureAllocator() *automation.Allocator {
 	if w.Allocator == nil {
-		w.Allocator = &Allocator{}
+		w.Allocator = &automation.Allocator{}
 	}
 	return w.Allocator
 }

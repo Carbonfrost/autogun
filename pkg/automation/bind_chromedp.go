@@ -1,13 +1,10 @@
-package workspace
+package automation
 
 import (
-	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
 	"github.com/chromedp/chromedp"
@@ -15,21 +12,9 @@ import (
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
-type AutomationResult struct {
-	Outputs     map[string]*json.RawMessage
-	OutputFiles map[string]*[]byte
-}
-
 type produceQueryActionFunc = func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction
 type produceFileUserActionFunc = func(*[]byte) chromedp.Action
 type usingVariableFunc = func(msg *json.RawMessage) chromedp.Action
-
-func NewAutomationResult() *AutomationResult {
-	return &AutomationResult{
-		Outputs:     map[string]*json.RawMessage{},
-		OutputFiles: map[string]*[]byte{},
-	}
-}
 
 func bindTask(task config.Task) chromedp.Action {
 	switch t := task.(type) {
@@ -153,29 +138,12 @@ func bindQueryOptions(opts *config.Options) (results []chromedp.QueryOption) {
 	return
 }
 
-func bindAutomation(automation *config.Automation) []chromedp.Action {
-	actions := make([]chromedp.Action, 0)
+func bindAutomation(automation *config.Automation) []Task {
+	actions := make([]Task, 0)
 	for _, t := range automation.Tasks {
 		actions = append(actions, bindTask(t))
 	}
 	return actions
-}
-
-// TODO This should not necessarily be API
-func (r *AutomationResult) PersistOutputFiles() {
-	for name, f := range r.OutputFiles {
-		file, err := os.Create(name)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error persisting output files: %v\n", err)
-			continue
-		}
-
-		_, err = io.Copy(file, bytes.NewReader(*f))
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error persisting output files: %v\n", err)
-			continue
-		}
-	}
 }
 
 func requestOutputFile(name string, fn produceFileUserActionFunc) chromedp.Action {
@@ -196,12 +164,4 @@ func usingVariable(name string, fn usingVariableFunc) chromedp.Action {
 		res.Outputs[name] = &msg
 		return fn(&msg).Do(c)
 	})
-}
-
-func mustAutomationResult(c context.Context) *AutomationResult {
-	return c.Value(automationResultKey).(*AutomationResult)
-}
-
-func withAutomationResult(c context.Context, ar *AutomationResult) context.Context {
-	return context.WithValue(c, automationResultKey, ar)
 }
