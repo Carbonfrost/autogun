@@ -13,7 +13,7 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/spf13/afero v1.9.5
 	github.com/zclconf/go-cty v1.16.2
-	honnef.co/go/tools v0.5.1
+	honnef.co/go/tools v0.6.0
 )
 
 require (
