@@ -40,74 +40,28 @@ var (
 			},
 		},
 	}
+
+	mappingTaskBlocks = blockMapping[Task]{
+		"navigate":         taskMapping(decodeNavigateBlock),
+		"navigate_forward": taskMapping(decodeNavigateForwardBlock),
+		"navigate_back":    taskMapping(decodeNavigateBackBlock),
+		"eval":             taskMapping(decodeEvalBlock),
+		"wait_visible":     taskMapping(decodeWaitVisibleBlock),
+		"click":            taskMapping(decodeClickBlock),
+		"screenshot":       taskMapping(decodeScreenshotBlock),
+	}
 )
 
 func decodeAutomationBlock(block *hcl.Block) (*Automation, hcl.Diagnostics) {
-	var diags hcl.Diagnostics
-	f := &Automation{
-		Name:      tryLabel(block, 0),
-		DeclRange: block.DefRange,
-		NameRange: tryLabelRange(block, 0),
-	}
-	content, _, moreDiags := block.Body.PartialContent(automationBlockSchema)
-	diags = append(diags, moreDiags...)
-
-	for _, block := range content.Blocks {
-		switch block.Type {
-
-		case "navigate":
-			cfg, cfgDiags := decodeNavigateBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				f.Tasks = append(f.Tasks, cfg)
-			}
-
-		case "navigate_forward":
-			cfg, cfgDiags := decodeNavigateForwardBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				f.Tasks = append(f.Tasks, cfg)
-			}
-
-		case "navigate_back":
-			cfg, cfgDiags := decodeNavigateBackBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				f.Tasks = append(f.Tasks, cfg)
-			}
-
-		case "eval":
-			cfg, cfgDiags := decodeEvalBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				f.Tasks = append(f.Tasks, cfg)
-			}
-
-		case "wait_visible":
-			cfg, cfgDiags := decodeWaitVisibleBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				f.Tasks = append(f.Tasks, cfg)
-			}
-
-		case "click":
-			cfg, cfgDiags := decodeClickBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				f.Tasks = append(f.Tasks, cfg)
-			}
-
-		case "screenshot":
-			cfg, cfgDiags := decodeScreenshotBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				f.Tasks = append(f.Tasks, cfg)
-			}
-
-		default:
-			continue
-		}
-	}
-
-	return f, diags
+	f := new(Automation)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsOptionalLabel(&f.Name, &f.NameRange),
+		supportsPartialContentSchema(
+			automationBlockSchema,
+			appendsTo(&f.Tasks, mappingTaskBlocks),
+		),
+	)
 }

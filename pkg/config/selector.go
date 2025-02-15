@@ -127,36 +127,30 @@ func parseSelectorOn(s string, dst *SelectorOn, subject *hcl.Range) hcl.Diagnost
 	}
 }
 
-func andSelectorQueryAttributes(content *hcl.BodyContent, dst selectorTask) hcl.Diagnostics {
-	var diags hcl.Diagnostics
+func supportsSelectorBlocks(sels *[]*Selector, opts **Options) partialContentMapper {
+	return func(content *hcl.BodyContent) hcl.Diagnostics {
+		var diags hcl.Diagnostics
 
-	if attr, ok := content.Attributes["selector"]; ok {
-		var dstSelector string
-		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &dstSelector)
-		diags = append(diags, moreDiags...)
-		dst.setSelector(dstSelector)
-	}
+		for _, block := range content.Blocks {
+			switch block.Type {
+			case "selector":
+				cfg, cfgDiags := decodeSelectorBlock(block)
+				if cfg != nil {
+					*sels = append(*sels, cfg)
+				}
+				diags = append(diags, cfgDiags...)
 
-	for _, block := range content.Blocks {
-		switch block.Type {
+			case "options":
+				cfg, cfgDiags := decodeOptionsBlock(block)
+				if cfg != nil {
+					*opts = cfg
+				}
+				diags = append(diags, cfgDiags...)
 
-		case "selector":
-			cfg, cfgDiags := decodeSelectorBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				dst.addSelector(cfg)
+			default:
+				continue
 			}
-		case "options":
-			cfg, cfgDiags := decodeOptionsBlock(block)
-			diags = append(diags, cfgDiags...)
-			if cfg != nil {
-				dst.setOptions(cfg)
-			}
-
-		default:
-			continue
 		}
+		return diags
 	}
-
-	return diags
 }

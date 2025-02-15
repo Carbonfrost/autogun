@@ -63,13 +63,6 @@ type Options struct {
 	AtLeast       *int
 }
 
-type selectorTask interface {
-	Task
-	setSelector(string)
-	addSelector(*Selector) error
-	setOptions(*Options) error
-}
-
 var (
 	navigateBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
@@ -187,7 +180,8 @@ func decodeClickBlock(block *hcl.Block) (*Click, hcl.Diagnostics) {
 		supportsDeclRange(&f.DeclRange),
 		supportsPartialContentSchema(
 			clickBlockSchema,
-			supportsSelector(f),
+			withAttribute("selector", &f.Selector),
+			supportsSelectorBlocks(&f.Selectors, &f.Options),
 		),
 	)
 }
@@ -200,13 +194,14 @@ func decodeWaitVisibleBlock(block *hcl.Block) (*WaitVisible, hcl.Diagnostics) {
 		supportsDeclRange(&f.DeclRange),
 		supportsPartialContentSchema(
 			clickBlockSchema,
-			supportsSelector(f),
+			withAttribute("selector", &f.Selector),
+			supportsSelectorBlocks(&f.Selectors, &f.Options),
 		),
 	)
 }
 
 func decodeScreenshotBlock(block *hcl.Block) (*Screenshot, hcl.Diagnostics) {
-	s := &Screenshot{}
+	s := new(Screenshot)
 	return reduceTask(
 		s,
 		block,
@@ -214,7 +209,8 @@ func decodeScreenshotBlock(block *hcl.Block) (*Screenshot, hcl.Diagnostics) {
 		supportsOptionalLabel(&s.Name, &s.NameRange),
 		supportsPartialContentSchema(
 			screenshotBlockSchema,
-			supportsSelector(s),
+			withAttribute("selector", &s.Selector),
+			supportsSelectorBlocks(&s.Selectors, &s.Options),
 		),
 	)
 }
@@ -295,6 +291,7 @@ func (s *Screenshot) setOptions(o *Options) error {
 	return nil
 }
 
+func (*Automation) taskSigil()      {}
 func (*Navigate) taskSigil()        {}
 func (*NavigateForward) taskSigil() {}
 func (*NavigateBack) taskSigil()    {}
@@ -312,10 +309,13 @@ func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnost
 	}
 }
 
-var _ Task = (*Navigate)(nil)
-var _ Task = (*NavigateForward)(nil)
-var _ Task = (*NavigateBack)(nil)
-var _ Task = (*Eval)(nil)
-var _ selectorTask = (*WaitVisible)(nil)
-var _ selectorTask = (*Click)(nil)
-var _ selectorTask = (*Screenshot)(nil)
+var (
+	_ Task = (*Navigate)(nil)
+	_ Task = (*NavigateForward)(nil)
+	_ Task = (*NavigateBack)(nil)
+	_ Task = (*Eval)(nil)
+	_ Task = (*Automation)(nil)
+	_ Task = (*WaitVisible)(nil)
+	_ Task = (*Click)(nil)
+	_ Task = (*Screenshot)(nil)
+)
