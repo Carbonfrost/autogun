@@ -22,6 +22,7 @@ type AutomationResult struct {
 
 type produceQueryActionFunc = func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction
 type produceFileUserActionFunc = func(*[]byte) chromedp.Action
+type usingVariableFunc = func(msg *json.RawMessage) chromedp.Action
 
 func NewAutomationResult() *AutomationResult {
 	return &AutomationResult{
@@ -59,14 +60,13 @@ func bindTask(task config.Task) chromedp.Action {
 		}, t.Selector, t.Selectors, t.Options)
 
 	case *config.Eval:
-		return chromedp.ActionFunc(func(c context.Context) error {
-			res := mustAutomationResult(c)
-			var msg json.RawMessage
-			res.Outputs[t.Name] = &msg
-			err := chromedp.Evaluate(t.Script, &msg).Do(c)
-			fmt.Printf("Evaluate %v\n", string(msg))
-			evalContextFrom(c).Variables[t.Name] = umarshalData(msg)
-			return err
+		return usingVariable(t.Name, func(msg *json.RawMessage) chromedp.Action {
+			return chromedp.ActionFunc(func(c context.Context) error {
+				err := chromedp.Evaluate(t.Script, msg).Do(c)
+				fmt.Printf("Evaluate %s\n", t.Name)
+				evalContextFrom(c).Variables[t.Name] = umarshalData(*msg)
+				return err
+			})
 		})
 
 	default:
@@ -186,6 +186,15 @@ func requestOutputFile(name string, fn produceFileUserActionFunc) chromedp.Actio
 
 		act := fn(&file)
 		return act.Do(c)
+	})
+}
+
+func usingVariable(name string, fn usingVariableFunc) chromedp.Action {
+	return chromedp.ActionFunc(func(c context.Context) error {
+		res := mustAutomationResult(c)
+		var msg json.RawMessage
+		res.Outputs[name] = &msg
+		return fn(&msg).Do(c)
 	})
 }
 
