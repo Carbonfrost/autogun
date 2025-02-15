@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -17,6 +18,10 @@ type Parser struct {
 
 const (
 	badIdentifierDetail = "A name must start with a letter or underscore and may contain only letters, digits, underscores, and dashes."
+)
+
+var (
+	identifierPattern = regexp.MustCompile("(?i)[_a-z][a-z0-9_-]*")
 )
 
 func NewParser(fs fs.FS) *Parser {
@@ -83,4 +88,8 @@ func tryLabelRange(b *hcl.Block, n int) (res hcl.Range) {
 		res = b.LabelRanges[n]
 	}
 	return
+}
+
+func validIdentifier(name string) bool {
+	return len(name) == 0 || identifierPattern.MatchString(name)
 }

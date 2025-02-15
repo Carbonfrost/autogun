@@ -26,8 +26,18 @@ func supportsDeclRange(d *hcl.Range) mapper {
 
 func supportsOptionalLabel(name *string, nameRange *hcl.Range) mapper {
 	return func(block *hcl.Block) hcl.Diagnostics {
-		*name = tryLabel(block, 0)
-		*nameRange = block.DefRange
+		label := tryLabel(block, 0)
+		*name = label
+		if !validIdentifier(label) {
+			return hcl.Diagnostics{
+				{
+					Severity: hcl.DiagError,
+					Summary:  "Invalid identifier name",
+					Detail:   badIdentifierDetail,
+				},
+			}
+		}
+		*nameRange = tryLabelRange(block, 0)
 		return nil
 	}
 }
