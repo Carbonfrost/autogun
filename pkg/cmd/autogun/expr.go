@@ -32,6 +32,11 @@ func Exprs() []*cli.Expr {
 			},
 			Evaluate: bindString("name", Flow),
 		},
+		{
+			Name:     "forward", // -forward
+			HelpText: "navigate forward in history",
+			Evaluate: NavigateForward(),
+		},
 	}
 }
 
@@ -41,6 +46,10 @@ func RunSource(source string) cli.Evaluator {
 
 func Flow(name string) cli.Evaluator {
 	return wrapTaskAsEvaluator(flow(name))
+}
+
+func NavigateForward() cli.Evaluator {
+	return wrapTaskAsEvaluator(chromedp.NavigateForward())
 }
 
 func bindString(arg string, fn func(string) cli.Evaluator) cli.EvaluatorFunc {

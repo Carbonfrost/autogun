@@ -19,6 +19,9 @@ var (
 				Type: "navigate",
 			},
 			{
+				Type: "navigate_forward",
+			},
+			{
 				Type:       "eval",
 				LabelNames: []string{"name"},
 			},
@@ -51,6 +54,13 @@ func decodeAutomationBlock(block *hcl.Block) (*Automation, hcl.Diagnostics) {
 
 		case "navigate":
 			cfg, cfgDiags := decodeNavigateBlock(block)
+			diags = append(diags, cfgDiags...)
+			if cfg != nil {
+				f.Tasks = append(f.Tasks, cfg)
+			}
+
+		case "navigate_forward":
+			cfg, cfgDiags := decodeNavigateForwardBlock(block)
 			diags = append(diags, cfgDiags...)
 			if cfg != nil {
 				f.Tasks = append(f.Tasks, cfg)

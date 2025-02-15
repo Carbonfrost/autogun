@@ -1,0 +1,8 @@
+automation "navigate" {
+    navigate {
+        url = "https://example.com"
+    }
+
+    navigate_forward {
+    }
+}

@@ -27,6 +27,8 @@ func bindTask(task config.Task) chromedp.Action {
 			fmt.Printf("Navigate to %s\n", v.AsString())
 			return chromedp.Navigate(v.AsString()).Do(c)
 		})
+	case *config.NavigateForward:
+		return chromedp.NavigateForward()
 	case *config.WaitVisible:
 		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
 	case *config.Click:

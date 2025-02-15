@@ -23,12 +23,13 @@ var _ = Describe("LoadConfigFile", func() {
 				Expect(res.Automations[0].Tasks).To(expected)
 			},
 
-			Entry("navigate", "eval.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+			Entry("navigate", "navigate.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"0": And(
 					BeAssignableToTypeOf(&config.Navigate{}),
 					PointTo(MatchFields(IgnoreExtras, Fields{
 						"URL": WithTransform(toString, Equal("https://example.com")),
 					}))),
+				"1": BeAssignableToTypeOf(&config.NavigateForward{}),
 			})),
 
 			Entry("evaluate", "eval.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
