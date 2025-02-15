@@ -55,3 +55,12 @@ func withAttribute(name string, value any) partialContentMapper {
 		return nil
 	}
 }
+
+func withAttributeExpression(name string, value *hcl.Expression) partialContentMapper {
+	return func(content *hcl.BodyContent) hcl.Diagnostics {
+		if attr, ok := content.Attributes[name]; ok {
+			*value = attr.Expr
+		}
+		return nil
+	}
+}
