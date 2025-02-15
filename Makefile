@@ -10,7 +10,9 @@ BUILD_VERSION=$(shell git rev-parse --short HEAD)
 GO_LDFLAGS=-X 'github.com/Carbonfrost/autogun/pkg/internal/build.Version=$(BUILD_VERSION)'
 
 lint:
-	$(Q) go run honnef.co/go/tools/cmd/staticcheck -checks 'all,-ST*' $(shell go list ./...)
+	$(Q) go tool gocritic check ./... 2>&1 || true
+	$(Q) go tool revive ./... 2>&1 || true
+	$(Q) go tool staticcheck -checks 'all,-ST*' $(shell go list ./...) 2>&1	
 
 install: -install-autogun
 
