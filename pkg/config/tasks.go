@@ -193,7 +193,7 @@ func decodeWaitVisibleBlock(block *hcl.Block) (*WaitVisible, hcl.Diagnostics) {
 		block,
 		supportsDeclRange(&f.DeclRange),
 		supportsPartialContentSchema(
-			clickBlockSchema,
+			waitVisibleBlockSchema,
 			withAttribute("selector", &f.Selector),
 			supportsSelectorBlocks(&f.Selectors, &f.Options),
 		),
@@ -247,48 +247,6 @@ func decodeOptionsBlock(block *hcl.Block) (*Options, hcl.Diagnostics) {
 	}
 
 	return f, diags
-}
-
-func (c *Click) setSelector(s string) {
-	c.Selector = s
-}
-
-func (c *Click) addSelector(s *Selector) error {
-	c.Selectors = append(c.Selectors, s)
-	return nil
-}
-
-func (c *Click) setOptions(o *Options) error {
-	c.Options = o
-	return nil
-}
-
-func (w *WaitVisible) setSelector(s string) {
-	w.Selector = s
-}
-
-func (w *WaitVisible) addSelector(s *Selector) error {
-	w.Selectors = append(w.Selectors, s)
-	return nil
-}
-
-func (w *WaitVisible) setOptions(o *Options) error {
-	w.Options = o
-	return nil
-}
-
-func (s *Screenshot) setSelector(t string) {
-	s.Selector = t
-}
-
-func (s *Screenshot) addSelector(t *Selector) error {
-	s.Selectors = append(s.Selectors, t)
-	return nil
-}
-
-func (s *Screenshot) setOptions(o *Options) error {
-	s.Options = o
-	return nil
 }
 
 func (*Automation) taskSigil()      {}

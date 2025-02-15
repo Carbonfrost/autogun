@@ -71,15 +71,6 @@ func (p *Parser) LoadConfigFile(path string) (*File, hcl.Diagnostics) {
 	return decodeFile(path, body)
 }
 
-func diagReservedBlockName(name string, subject *hcl.Range) *hcl.Diagnostic {
-	return &hcl.Diagnostic{
-		Severity: hcl.DiagError,
-		Summary:  "Reserved block type name in resource block",
-		Detail:   fmt.Sprintf("The block type name %q is reserved for use in a future version.", name),
-		Subject:  subject,
-	}
-}
-
 func tryLabel(b *hcl.Block, n int) string {
 	if n < len(b.Labels) {
 		return b.Labels[n]

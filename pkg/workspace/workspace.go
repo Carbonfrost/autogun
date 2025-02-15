@@ -67,7 +67,7 @@ func (w *Workspace) Dir() string {
 	return w.actualDirectory()
 }
 
-// Autogun gets the directory where workspace metadata is stored
+// AutogunDir gets the directory where workspace metadata is stored
 func (w *Workspace) AutogunDir() string {
 	return filepath.Join(w.actualDirectory(), ".autogun")
 }

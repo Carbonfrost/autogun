@@ -47,17 +47,18 @@ func RunAutomation(c *cli.Context) error {
 func convertSources(c *cli.Context) (*automation.Automation, error) {
 	var result []automation.Task
 	for _, source := range c.List("sources") {
-		if source == "." {
+		switch {
+		case source == ".":
 			continue
 
-		} else if source == "-" {
+		case source == "-":
 			// TODO Support reading the automation from an input file
 			return nil, fmt.Errorf("not yet implemented: read automation from stdin")
 
-		} else if looksLikeURL(source) {
+		case looksLikeURL(source):
 			result = append(result, chromedp.Navigate(source))
 
-		} else {
+		default:
 			result = append(result, runSource(source))
 		}
 	}
