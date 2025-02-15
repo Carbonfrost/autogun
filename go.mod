@@ -11,7 +11,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.10.0
 	github.com/onsi/ginkgo/v2 v2.21.0
 	github.com/onsi/gomega v1.35.1
-	github.com/spf13/afero v1.9.5
+	github.com/spf13/afero v1.12.0
 	github.com/zclconf/go-cty v1.16.2
 	honnef.co/go/tools v0.5.1
 )
