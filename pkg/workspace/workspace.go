@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -18,7 +19,7 @@ type Workspace struct {
 }
 
 type workspaceState struct {
-	Automations     []*config.Automation
+	Automations     []*automation.Automation
 	didImplicitLoad bool
 }
 
@@ -43,12 +44,17 @@ func (w *Workspace) Load(files ...string) error {
 	return nil
 }
 
-func (w *Workspace) Automations() []*config.Automation {
+func (w *Workspace) Automations() []*automation.Automation {
+	err := w.load()
+	if err != nil {
+		logError(err)
+	}
 	return w.state().Automations
 }
 
-func (w *Workspace) automation(name string) *config.Automation {
-	for _, auto := range w.state().Automations {
+// Automation retrieves the automation by name
+func (w *Workspace) Automation(name string) *automation.Automation {
+	for _, auto := range w.Automations() {
 		if auto.Name == name {
 			return auto
 		}
@@ -95,8 +101,10 @@ func (w *Workspace) loadFilesFromWS() error {
 			return nil
 		}
 		if strings.HasSuffix(path, ".autog") ||
+			strings.HasSuffix(path, ".autogun") ||
 			strings.HasSuffix(path, ".hcl") ||
 			strings.HasSuffix(path, ".autog.json") ||
+			strings.HasSuffix(path, ".autogun.json") ||
 			strings.HasSuffix(path, ".hcl.json") {
 			file, diag := p.LoadConfigFile(path)
 			if diag.HasErrors() {
@@ -132,6 +140,16 @@ func (w *Workspace) EnsureAllocator() *automation.Allocator {
 
 func (s *workspaceState) appendFiles(files []*config.File) {
 	for _, file := range files {
-		s.Automations = append(s.Automations, file.Automations...)
+		for _, auto := range file.Automations {
+			a, err := automation.Bind(auto)
+			if err != nil {
+				logError(err)
+			}
+			s.Automations = append(s.Automations, a)
+		}
 	}
+}
+
+func logError(err error) {
+	fmt.Fprintln(os.Stderr, err)
 }

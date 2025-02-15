@@ -68,7 +68,7 @@ func (p *Parser) LoadConfigFile(path string) (*File, hcl.Diagnostics) {
 		return nil, diags
 	}
 
-	return decodeFile(body)
+	return decodeFile(path, body)
 }
 
 func diagReservedBlockName(name string, subject *hcl.Range) *hcl.Diagnostic {

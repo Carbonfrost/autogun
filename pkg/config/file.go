@@ -5,6 +5,7 @@ import (
 )
 
 type File struct {
+	Filename    string
 	Automations []*Automation
 }
 
@@ -20,9 +21,11 @@ var (
 	}
 )
 
-func decodeFile(body hcl.Body) (*File, hcl.Diagnostics) {
+func decodeFile(filename string, body hcl.Body) (*File, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
-	f := &File{}
+	f := &File{
+		Filename: filename,
+	}
 
 	content, contentDiags := body.Content(fileSchema)
 	diags = append(diags, contentDiags...)

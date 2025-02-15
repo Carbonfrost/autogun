@@ -85,6 +85,16 @@ func runSource(source string) automation.Task {
 	})
 }
 
+func flow(name string) automation.Task {
+	return automation.TaskFunc(func(c context.Context) error {
+		a := contextual.Workspace(c).Automation(name)
+		if a == nil {
+			return fmt.Errorf("automation not found %q", name)
+		}
+		return a.Do(c)
+	})
+}
+
 func looksLikeURL(addr string) bool {
 	return strings.HasPrefix(addr, "http://") || strings.HasPrefix(addr, "https://")
 }

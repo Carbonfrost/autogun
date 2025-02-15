@@ -15,6 +15,8 @@ type TaskFunc func(context.Context) error
 
 // Automation is a multi-step automated process
 type Automation struct {
+	// Name gets the name of automation
+	Name string
 
 	// Tasks provides the tasks in the automation
 	Tasks []Task

@@ -20,11 +20,27 @@ func Exprs() []*cli.Expr {
 			},
 			Evaluate: bindString("file", RunSource),
 		},
+		{
+			Name:     "flow", // -flow NAME
+			HelpText: "run an automation by NAME",
+			Args: []*cli.Arg{
+				{
+					Name:  "name",
+					Value: new(string),
+					NArg:  1,
+				},
+			},
+			Evaluate: bindString("name", Flow),
+		},
 	}
 }
 
 func RunSource(source string) cli.Evaluator {
 	return wrapTaskAsEvaluator(runSource(source))
+}
+
+func Flow(name string) cli.Evaluator {
+	return wrapTaskAsEvaluator(flow(name))
 }
 
 func bindString(arg string, fn func(string) cli.Evaluator) cli.EvaluatorFunc {
