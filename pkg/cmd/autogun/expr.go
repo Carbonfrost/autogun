@@ -37,6 +37,11 @@ func Exprs() []*cli.Expr {
 			HelpText: "navigate forward in history",
 			Evaluate: NavigateForward(),
 		},
+		{
+			Name:     "back", // -back
+			HelpText: "navigate back in history",
+			Evaluate: NavigateBack(),
+		},
 	}
 }
 
@@ -50,6 +55,10 @@ func Flow(name string) cli.Evaluator {
 
 func NavigateForward() cli.Evaluator {
 	return wrapTaskAsEvaluator(chromedp.NavigateForward())
+}
+
+func NavigateBack() cli.Evaluator {
+	return wrapTaskAsEvaluator(chromedp.NavigateBack())
 }
 
 func bindString(arg string, fn func(string) cli.Evaluator) cli.EvaluatorFunc {

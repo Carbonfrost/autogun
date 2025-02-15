@@ -30,6 +30,7 @@ var _ = Describe("LoadConfigFile", func() {
 						"URL": WithTransform(toString, Equal("https://example.com")),
 					}))),
 				"1": BeAssignableToTypeOf(&config.NavigateForward{}),
+				"2": BeAssignableToTypeOf(&config.NavigateBack{}),
 			})),
 
 			Entry("evaluate", "eval.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{

@@ -23,6 +23,10 @@ type NavigateForward struct {
 	DeclRange hcl.Range
 }
 
+type NavigateBack struct {
+	DeclRange hcl.Range
+}
+
 type Eval struct {
 	DeclRange hcl.Range
 	NameRange hcl.Range
@@ -120,6 +124,7 @@ var (
 	}
 
 	navigateForwardBlockSchema = &hcl.BodySchema{}
+	navigateBackBlockSchema    = &hcl.BodySchema{}
 )
 
 func decodeNavigateBlock(block *hcl.Block) (*Navigate, hcl.Diagnostics) {
@@ -143,6 +148,18 @@ func decodeNavigateBlock(block *hcl.Block) (*Navigate, hcl.Diagnostics) {
 func decodeNavigateForwardBlock(block *hcl.Block) (*NavigateForward, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	f := &NavigateForward{
+		DeclRange: block.DefRange,
+	}
+
+	_, _, moreDiags := block.Body.PartialContent(navigateForwardBlockSchema)
+	diags = append(diags, moreDiags...)
+
+	return f, diags
+}
+
+func decodeNavigateBackBlock(block *hcl.Block) (*NavigateBack, hcl.Diagnostics) {
+	var diags hcl.Diagnostics
+	f := &NavigateBack{
 		DeclRange: block.DefRange,
 	}
 
@@ -293,6 +310,7 @@ func (s *Screenshot) setOptions(o *Options) error {
 
 func (*Navigate) taskSigil()        {}
 func (*NavigateForward) taskSigil() {}
+func (*NavigateBack) taskSigil()    {}
 func (*Eval) taskSigil()            {}
 func (*Click) taskSigil()           {}
 func (*WaitVisible) taskSigil()     {}
@@ -309,6 +327,7 @@ func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnost
 
 var _ Task = (*Navigate)(nil)
 var _ Task = (*NavigateForward)(nil)
+var _ Task = (*NavigateBack)(nil)
 var _ Task = (*Eval)(nil)
 var _ selectorTask = (*WaitVisible)(nil)
 var _ selectorTask = (*Click)(nil)

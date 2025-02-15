@@ -29,6 +29,8 @@ func bindTask(task config.Task) chromedp.Action {
 		})
 	case *config.NavigateForward:
 		return chromedp.NavigateForward()
+	case *config.NavigateBack:
+		return chromedp.NavigateBack()
 	case *config.WaitVisible:
 		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
 	case *config.Click:

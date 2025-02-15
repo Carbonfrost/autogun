@@ -5,4 +5,7 @@ automation "navigate" {
 
     navigate_forward {
     }
+
+    navigate_back {
+    }
 }
