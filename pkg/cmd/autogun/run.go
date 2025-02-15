@@ -107,5 +107,5 @@ func loadOne(w *workspace.Workspace, path string) (*automation.Automation, error
 		return nil, diag
 	}
 
-	return automation.Bind(file.Automations[0])
+	return automation.Bind(file.Automations[0], automation.UsingChromedp)
 }

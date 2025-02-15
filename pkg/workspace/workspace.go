@@ -141,7 +141,7 @@ func (w *Workspace) EnsureAllocator() *automation.Allocator {
 func (s *workspaceState) appendFiles(files []*config.File) {
 	for _, file := range files {
 		for _, auto := range file.Automations {
-			a, err := automation.Bind(auto)
+			a, err := automation.Bind(auto, automation.UsingChromedp)
 			if err != nil {
 				logError(err)
 			}
