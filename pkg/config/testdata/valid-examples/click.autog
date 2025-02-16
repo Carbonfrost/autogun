@@ -20,4 +20,12 @@ automation "click" {
             on     = "VISIBLE"
         }
     }
+
+    double_click {
+        selector {
+            target = "#yellow"
+            by     = "SEARCH"
+            on     = "VISIBLE"
+        }
+    }
 }

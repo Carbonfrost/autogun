@@ -87,6 +87,20 @@ var _ = Describe("LoadConfigFile", func() {
 					}))),
 			})),
 
+			Entry("double_click", "click.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"4": And(
+					BeAssignableToTypeOf(&config.DoubleClick{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Selectors": MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+							"0": And(
+								BeAssignableToTypeOf(&config.Selector{}),
+								PointTo(MatchFields(IgnoreExtras, Fields{
+									"Target": Equal("#yellow"),
+								}))),
+						}),
+					}))),
+			})),
+
 			Entry("wait_visible", "wait_visible.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"1": And(
 					BeAssignableToTypeOf(&config.WaitVisible{}),

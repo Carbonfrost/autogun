@@ -35,6 +35,9 @@ var (
 				Type: "click",
 			},
 			{
+				Type: "double_click",
+			},
+			{
 				Type: "wait_visible",
 			},
 			{
@@ -56,6 +59,7 @@ var (
 	mappingTaskBlocks = blockMapping[Task]{
 		"blur":             taskMapping(decodeBlurBlock),
 		"click":            taskMapping(decodeClickBlock),
+		"double_click":     taskMapping(decodeDoubleClickBlock),
 		"eval":             taskMapping(decodeEvalBlock),
 		"navigate":         taskMapping(decodeNavigateBlock),
 		"navigate_back":    taskMapping(decodeNavigateBackBlock),

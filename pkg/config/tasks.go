@@ -48,6 +48,13 @@ type Click struct {
 	Options   *Options
 }
 
+type DoubleClick struct {
+	DeclRange hcl.Range
+	Selector  string
+	Selectors []*Selector
+	Options   *Options
+}
+
 type WaitVisible struct {
 	DeclRange hcl.Range
 	Selector  string
@@ -97,6 +104,16 @@ var (
 	}
 
 	clickBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "selector"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "selector"},
+			{Type: "options"},
+		},
+	}
+
+	doubleClickBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
 		},
@@ -245,6 +262,20 @@ func decodeClickBlock(block *hcl.Block) (*Click, hcl.Diagnostics) {
 	)
 }
 
+func decodeDoubleClickBlock(block *hcl.Block) (*DoubleClick, hcl.Diagnostics) {
+	f := new(DoubleClick)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			doubleClickBlockSchema,
+			withAttribute("selector", &f.Selector),
+			supportsSelectorBlocks(&f.Selectors, &f.Options),
+		),
+	)
+}
+
 func decodeBlurBlock(block *hcl.Block) (*Blur, hcl.Diagnostics) {
 	f := new(Blur)
 	return reduceTask(
@@ -330,6 +361,7 @@ func (o *Sleep) setDuration(n time.Duration) {
 func (*Automation) taskSigil()      {}
 func (*Blur) taskSigil()            {}
 func (*Click) taskSigil()           {}
+func (*DoubleClick) taskSigil()     {}
 func (*Eval) taskSigil()            {}
 func (*Navigate) taskSigil()        {}
 func (*NavigateBack) taskSigil()    {}
