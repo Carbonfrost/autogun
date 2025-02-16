@@ -36,6 +36,7 @@ var _ = Describe("Bind", func() {
 			Entry("navigate", new(config.Navigate)),
 			Entry("navigate_back", new(config.NavigateBack)),
 			Entry("navigate_forward", new(config.NavigateForward)),
+			Entry("reload", new(config.Reload)),
 			Entry("screenshot", new(config.Screenshot)),
 			Entry("sleep", new(config.Sleep)),
 			Entry("wait_visible", new(config.WaitVisible)),

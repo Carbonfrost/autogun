@@ -31,6 +31,7 @@ var _ = Describe("LoadConfigFile", func() {
 					}))),
 				"1": BeAssignableToTypeOf(&config.NavigateForward{}),
 				"2": BeAssignableToTypeOf(&config.NavigateBack{}),
+				"3": BeAssignableToTypeOf(&config.Reload{}),
 			})),
 
 			Entry("evaluate", "eval.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{

@@ -8,4 +8,6 @@ automation "navigate" {
 
     navigate_back {
     }
+
+    reload {}
 }

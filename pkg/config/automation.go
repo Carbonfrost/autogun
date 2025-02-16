@@ -41,6 +41,9 @@ var (
 			{
 				Type: "sleep",
 			},
+			{
+				Type: "reload",
+			},
 		},
 	}
 
@@ -51,6 +54,7 @@ var (
 		"navigate_back":    taskMapping(decodeNavigateBackBlock),
 		"navigate_forward": taskMapping(decodeNavigateForwardBlock),
 		"screenshot":       taskMapping(decodeScreenshotBlock),
+		"reload":           taskMapping(decodeReloadBlock),
 		"sleep":            taskMapping(decodeSleepBlock),
 		"wait_visible":     taskMapping(decodeWaitVisibleBlock),
 	}

@@ -45,6 +45,11 @@ func Exprs() []*cli.Expr {
 			Evaluate: NavigateBack(),
 		},
 		{
+			Name:     "reload", // -reload
+			HelpText: "reload the current page",
+			Evaluate: Reload(),
+		},
+		{
 			Name:     "sleep", // -sleep DURATION
 			HelpText: "sleep for the DURATION",
 			Args: []*cli.Arg{
@@ -77,6 +82,10 @@ func NavigateBack() cli.Evaluator {
 
 func Sleep(d time.Duration) cli.Evaluator {
 	return wrapTaskAsEvaluator(chromedp.Sleep(d))
+}
+
+func Reload() cli.Evaluator {
+	return wrapTaskAsEvaluator(chromedp.Reload())
 }
 
 func bindString(arg string, fn func(string) cli.Evaluator) cli.EvaluatorFunc {

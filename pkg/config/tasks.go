@@ -68,6 +68,10 @@ type Sleep struct {
 	Duration  time.Duration
 }
 
+type Reload struct {
+	DeclRange hcl.Range
+}
+
 var (
 	navigateBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
@@ -126,6 +130,7 @@ var (
 
 	navigateForwardBlockSchema = &hcl.BodySchema{}
 	navigateBackBlockSchema    = &hcl.BodySchema{}
+	reloadBlockSchema          = &hcl.BodySchema{}
 )
 
 func decodeNavigateBlock(block *hcl.Block) (*Navigate, hcl.Diagnostics) {
@@ -162,6 +167,18 @@ func decodeNavigateBackBlock(block *hcl.Block) (*NavigateBack, hcl.Diagnostics) 
 		supportsDeclRange(&f.DeclRange),
 		supportsPartialContentSchema(
 			navigateBackBlockSchema,
+		),
+	)
+}
+
+func decodeReloadBlock(block *hcl.Block) (*Reload, hcl.Diagnostics) {
+	f := new(Reload)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			reloadBlockSchema,
 		),
 	)
 }
@@ -271,6 +288,7 @@ func (*Click) taskSigil()           {}
 func (*WaitVisible) taskSigil()     {}
 func (*Screenshot) taskSigil()      {}
 func (*Sleep) taskSigil()           {}
+func (*Reload) taskSigil()          {}
 
 func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnostic {
 	return &hcl.Diagnostic{
@@ -280,15 +298,3 @@ func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnost
 		Subject:  subject,
 	}
 }
-
-var (
-	_ Task = (*Navigate)(nil)
-	_ Task = (*NavigateForward)(nil)
-	_ Task = (*NavigateBack)(nil)
-	_ Task = (*Eval)(nil)
-	_ Task = (*Automation)(nil)
-	_ Task = (*WaitVisible)(nil)
-	_ Task = (*Click)(nil)
-	_ Task = (*Screenshot)(nil)
-	_ Task = (*Sleep)(nil)
-)
