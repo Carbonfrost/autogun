@@ -50,6 +50,11 @@ func Exprs() []*cli.Expr {
 			Evaluate: Reload(),
 		},
 		{
+			Name:     "stop", // -stop
+			HelpText: "stop loading the current page",
+			Evaluate: Stop(),
+		},
+		{
 			Name:     "sleep", // -sleep DURATION
 			HelpText: "sleep for the DURATION",
 			Args: []*cli.Arg{
@@ -86,6 +91,10 @@ func Sleep(d time.Duration) cli.Evaluator {
 
 func Reload() cli.Evaluator {
 	return wrapTaskAsEvaluator(chromedp.Reload())
+}
+
+func Stop() cli.Evaluator {
+	return wrapTaskAsEvaluator(chromedp.Stop())
 }
 
 func bindString(arg string, fn func(string) cli.Evaluator) cli.EvaluatorFunc {

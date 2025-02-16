@@ -10,4 +10,5 @@ automation "navigate" {
     }
 
     reload {}
+    stop {}
 }

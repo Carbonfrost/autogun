@@ -72,6 +72,10 @@ type Reload struct {
 	DeclRange hcl.Range
 }
 
+type Stop struct {
+	DeclRange hcl.Range
+}
+
 var (
 	navigateBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
@@ -131,6 +135,7 @@ var (
 	navigateForwardBlockSchema = &hcl.BodySchema{}
 	navigateBackBlockSchema    = &hcl.BodySchema{}
 	reloadBlockSchema          = &hcl.BodySchema{}
+	stopBlockSchema            = &hcl.BodySchema{}
 )
 
 func decodeNavigateBlock(block *hcl.Block) (*Navigate, hcl.Diagnostics) {
@@ -179,6 +184,18 @@ func decodeReloadBlock(block *hcl.Block) (*Reload, hcl.Diagnostics) {
 		supportsDeclRange(&f.DeclRange),
 		supportsPartialContentSchema(
 			reloadBlockSchema,
+		),
+	)
+}
+
+func decodeStopBlock(block *hcl.Block) (*Stop, hcl.Diagnostics) {
+	f := new(Stop)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			stopBlockSchema,
 		),
 	)
 }
@@ -280,15 +297,16 @@ func (o *Sleep) setDuration(n time.Duration) {
 }
 
 func (*Automation) taskSigil()      {}
-func (*Navigate) taskSigil()        {}
-func (*NavigateForward) taskSigil() {}
-func (*NavigateBack) taskSigil()    {}
-func (*Eval) taskSigil()            {}
 func (*Click) taskSigil()           {}
-func (*WaitVisible) taskSigil()     {}
+func (*Eval) taskSigil()            {}
+func (*Navigate) taskSigil()        {}
+func (*NavigateBack) taskSigil()    {}
+func (*NavigateForward) taskSigil() {}
+func (*Reload) taskSigil()          {}
 func (*Screenshot) taskSigil()      {}
 func (*Sleep) taskSigil()           {}
-func (*Reload) taskSigil()          {}
+func (*Stop) taskSigil()            {}
+func (*WaitVisible) taskSigil()     {}
 
 func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnostic {
 	return &hcl.Diagnostic{

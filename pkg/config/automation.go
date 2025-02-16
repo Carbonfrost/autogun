@@ -44,6 +44,9 @@ var (
 			{
 				Type: "reload",
 			},
+			{
+				Type: "stop",
+			},
 		},
 	}
 
@@ -56,6 +59,7 @@ var (
 		"screenshot":       taskMapping(decodeScreenshotBlock),
 		"reload":           taskMapping(decodeReloadBlock),
 		"sleep":            taskMapping(decodeSleepBlock),
+		"stop":             taskMapping(decodeStopBlock),
 		"wait_visible":     taskMapping(decodeWaitVisibleBlock),
 	}
 )
