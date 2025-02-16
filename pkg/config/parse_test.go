@@ -93,6 +93,19 @@ var _ = Describe("LoadConfigFile", func() {
 						"Selector": Equal("#aubergine"),
 					}))),
 			})),
+
+			Entry("sleep", "sleep.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"0": And(
+					BeAssignableToTypeOf(&config.Sleep{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Duration": Equal(5 * time.Second),
+					}))),
+				"1": And(
+					BeAssignableToTypeOf(&config.Sleep{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Duration": Equal(0 * time.Second),
+					}))),
+			})),
 		)
 	})
 })

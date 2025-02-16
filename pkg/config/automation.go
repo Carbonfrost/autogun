@@ -38,17 +38,21 @@ var (
 				Type:       "screenshot",
 				LabelNames: []string{"name"},
 			},
+			{
+				Type: "sleep",
+			},
 		},
 	}
 
 	mappingTaskBlocks = blockMapping[Task]{
-		"navigate":         taskMapping(decodeNavigateBlock),
-		"navigate_forward": taskMapping(decodeNavigateForwardBlock),
-		"navigate_back":    taskMapping(decodeNavigateBackBlock),
-		"eval":             taskMapping(decodeEvalBlock),
-		"wait_visible":     taskMapping(decodeWaitVisibleBlock),
 		"click":            taskMapping(decodeClickBlock),
+		"eval":             taskMapping(decodeEvalBlock),
+		"navigate":         taskMapping(decodeNavigateBlock),
+		"navigate_back":    taskMapping(decodeNavigateBackBlock),
+		"navigate_forward": taskMapping(decodeNavigateForwardBlock),
 		"screenshot":       taskMapping(decodeScreenshotBlock),
+		"sleep":            taskMapping(decodeSleepBlock),
+		"wait_visible":     taskMapping(decodeWaitVisibleBlock),
 	}
 )
 

@@ -35,6 +35,8 @@ func bindTask(task config.Task) chromedp.Action {
 		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
 	case *config.Click:
 		return bindSelector(chromedp.Click, t.Selector, t.Selectors, t.Options)
+	case *config.Sleep:
+		return chromedp.Sleep(t.Duration)
 	case *config.Screenshot:
 		filename := cmp.Or(t.Name, "screenshot.png")
 		if t.Selector == "" && len(t.Selectors) == 0 {

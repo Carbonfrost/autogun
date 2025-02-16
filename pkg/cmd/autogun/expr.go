@@ -1,6 +1,8 @@
 package autogun
 
 import (
+	"time"
+
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/chromedp/chromedp"
@@ -42,6 +44,18 @@ func Exprs() []*cli.Expr {
 			HelpText: "navigate back in history",
 			Evaluate: NavigateBack(),
 		},
+		{
+			Name:     "sleep", // -sleep DURATION
+			HelpText: "sleep for the DURATION",
+			Args: []*cli.Arg{
+				{
+					Name:  "duration",
+					Value: new(time.Duration),
+					NArg:  1,
+				},
+			},
+			Evaluate: bindDuration("duration", Sleep),
+		},
 	}
 }
 
@@ -61,9 +75,19 @@ func NavigateBack() cli.Evaluator {
 	return wrapTaskAsEvaluator(chromedp.NavigateBack())
 }
 
+func Sleep(d time.Duration) cli.Evaluator {
+	return wrapTaskAsEvaluator(chromedp.Sleep(d))
+}
+
 func bindString(arg string, fn func(string) cli.Evaluator) cli.EvaluatorFunc {
-	return func(c *cli.Context, v interface{}, yield func(interface{}) error) error {
+	return func(c *cli.Context, v any, yield func(any) error) error {
 		return fn(c.String(arg)).Evaluate(c, v, yield)
+	}
+}
+
+func bindDuration(arg string, fn func(time.Duration) cli.Evaluator) cli.EvaluatorFunc {
+	return func(c *cli.Context, v any, yield func(any) error) error {
+		return fn(c.Duration(arg)).Evaluate(c, v, yield)
 	}
 }
 

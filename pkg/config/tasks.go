@@ -63,19 +63,22 @@ type Options struct {
 	AtLeast       *int
 }
 
+type Sleep struct {
+	DeclRange hcl.Range
+	Duration  time.Duration
+}
+
 var (
 	navigateBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "url"},
 		},
-		Blocks: []hcl.BlockHeaderSchema{},
 	}
 
 	evalBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "script"},
 		},
-		Blocks: []hcl.BlockHeaderSchema{},
 	}
 
 	clickBlockSchema = &hcl.BodySchema{
@@ -113,7 +116,12 @@ var (
 			{Name: "at_least"},
 			{Name: "retry_interval"},
 		},
-		Blocks: []hcl.BlockHeaderSchema{},
+	}
+
+	sleepBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "duration"},
+		},
 	}
 
 	navigateForwardBlockSchema = &hcl.BodySchema{}
@@ -186,6 +194,19 @@ func decodeClickBlock(block *hcl.Block) (*Click, hcl.Diagnostics) {
 	)
 }
 
+func decodeSleepBlock(block *hcl.Block) (*Sleep, hcl.Diagnostics) {
+	f := new(Sleep)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			sleepBlockSchema,
+			withAttributeParser("duration", f.setDuration, time.ParseDuration),
+		),
+	)
+}
+
 func decodeWaitVisibleBlock(block *hcl.Block) (*WaitVisible, hcl.Diagnostics) {
 	f := new(WaitVisible)
 	return reduceTask(
@@ -237,6 +258,10 @@ func (o *Options) setAtLeast(n int) {
 	o.AtLeast = &n
 }
 
+func (o *Sleep) setDuration(n time.Duration) {
+	o.Duration = n
+}
+
 func (*Automation) taskSigil()      {}
 func (*Navigate) taskSigil()        {}
 func (*NavigateForward) taskSigil() {}
@@ -245,6 +270,7 @@ func (*Eval) taskSigil()            {}
 func (*Click) taskSigil()           {}
 func (*WaitVisible) taskSigil()     {}
 func (*Screenshot) taskSigil()      {}
+func (*Sleep) taskSigil()           {}
 
 func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnostic {
 	return &hcl.Diagnostic{
@@ -264,4 +290,5 @@ var (
 	_ Task = (*WaitVisible)(nil)
 	_ Task = (*Click)(nil)
 	_ Task = (*Screenshot)(nil)
+	_ Task = (*Sleep)(nil)
 )

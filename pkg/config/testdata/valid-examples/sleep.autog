@@ -1,0 +1,7 @@
+automation "sleep" {
+    sleep {
+        duration = "5s"
+    }
+
+    sleep {}
+}
