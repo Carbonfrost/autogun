@@ -44,6 +44,18 @@ var _ = Describe("LoadConfigFile", func() {
 					}))),
 			})),
 
+			Entry("blur", "blur.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"1": And(
+					BeAssignableToTypeOf(&config.Blur{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Selector": Equal("#grape"),
+						"Options": PointTo(MatchFields(IgnoreExtras, Fields{
+							"AtLeast":       PointTo(Equal(2)),
+							"RetryInterval": PointTo(Equal(5 * time.Minute)),
+						})),
+					}))),
+			})),
+
 			Entry("click", "click.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"1": And(
 					BeAssignableToTypeOf(&config.Click{}),

@@ -32,6 +32,7 @@ var _ = Describe("Bind", func() {
 				Expect(output.Tasks[0]).NotTo(BeNil())
 			},
 			Entry("click", new(config.Click)),
+			Entry("blur", new(config.Blur)),
 			Entry("eval", new(config.Eval)),
 			Entry("navigate", new(config.Navigate)),
 			Entry("navigate_back", new(config.NavigateBack)),

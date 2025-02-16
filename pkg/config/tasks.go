@@ -34,6 +34,13 @@ type Eval struct {
 	Script    string
 }
 
+type Blur struct {
+	DeclRange hcl.Range
+	Selector  string
+	Selectors []*Selector
+	Options   *Options
+}
+
 type Click struct {
 	DeclRange hcl.Range
 	Selector  string
@@ -90,6 +97,16 @@ var (
 	}
 
 	clickBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "selector"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "selector"},
+			{Type: "options"},
+		},
+	}
+
+	blurBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
 		},
@@ -228,6 +245,20 @@ func decodeClickBlock(block *hcl.Block) (*Click, hcl.Diagnostics) {
 	)
 }
 
+func decodeBlurBlock(block *hcl.Block) (*Blur, hcl.Diagnostics) {
+	f := new(Blur)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			blurBlockSchema,
+			withAttribute("selector", &f.Selector),
+			supportsSelectorBlocks(&f.Selectors, &f.Options),
+		),
+	)
+}
+
 func decodeSleepBlock(block *hcl.Block) (*Sleep, hcl.Diagnostics) {
 	f := new(Sleep)
 	return reduceTask(
@@ -297,6 +328,7 @@ func (o *Sleep) setDuration(n time.Duration) {
 }
 
 func (*Automation) taskSigil()      {}
+func (*Blur) taskSigil()            {}
 func (*Click) taskSigil()           {}
 func (*Eval) taskSigil()            {}
 func (*Navigate) taskSigil()        {}

@@ -1,0 +1,14 @@
+automation "blur" {
+    navigate {
+        url = "https://example.com"
+    }
+
+    blur {
+        selector = "#grape"
+
+        options {
+            retry_interval = "5m"
+            at_least = 2
+        }
+    }
+}

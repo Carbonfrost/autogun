@@ -29,6 +29,9 @@ var (
 				LabelNames: []string{"name"},
 			},
 			{
+				Type: "blur",
+			},
+			{
 				Type: "click",
 			},
 			{
@@ -51,6 +54,7 @@ var (
 	}
 
 	mappingTaskBlocks = blockMapping[Task]{
+		"blur":             taskMapping(decodeBlurBlock),
 		"click":            taskMapping(decodeClickBlock),
 		"eval":             taskMapping(decodeEvalBlock),
 		"navigate":         taskMapping(decodeNavigateBlock),
