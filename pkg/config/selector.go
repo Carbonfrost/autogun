@@ -44,38 +44,28 @@ var (
 )
 
 func decodeSelectorBlock(block *hcl.Block) (*Selector, hcl.Diagnostics) {
-	var diags hcl.Diagnostics
-	f := &Selector{
-		DeclRange: block.DefRange,
-	}
-
-	content, _, moreDiags := block.Body.PartialContent(selectorBlockSchema)
-	diags = append(diags, moreDiags...)
-
-	if attr, ok := content.Attributes["target"]; ok {
-		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &f.Target)
-		diags = append(diags, moreDiags...)
-	}
-
-	if attr, ok := content.Attributes["by"]; ok {
-		var in string
-		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &in)
-		diags = append(diags, moreDiags...)
-
-		moreDiags = parseSelectorBy(in, &f.By, &attr.Range)
-		diags = append(diags, moreDiags...)
-	}
-
-	if attr, ok := content.Attributes["on"]; ok {
-		var in string
-		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &in)
-		diags = append(diags, moreDiags...)
-
-		moreDiags = parseSelectorOn(in, &f.On, &attr.Range)
-		diags = append(diags, moreDiags...)
-	}
-
-	return f, diags
+	f := new(Selector)
+	return reduce(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			selectorBlockSchema,
+			withAttribute("target", &f.Target),
+			withAttr("by", func(attr *hcl.Attribute) hcl.Diagnostics {
+				var in string
+				diags := gohcl.DecodeExpression(attr.Expr, nil, &in)
+				moreDiags := parseSelectorBy(in, &f.By, &attr.Range)
+				return append(diags, moreDiags...)
+			}),
+			withAttr("on", func(attr *hcl.Attribute) hcl.Diagnostics {
+				var in string
+				diags := gohcl.DecodeExpression(attr.Expr, nil, &in)
+				moreDiags := parseSelectorOn(in, &f.On, &attr.Range)
+				return append(diags, moreDiags...)
+			}),
+		),
+	)
 }
 
 func parseSelectorBy(s string, dst *SelectorBy, subject *hcl.Range) hcl.Diagnostics {

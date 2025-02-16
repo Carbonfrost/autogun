@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/gohcl"
 )
 
 type Task interface {
@@ -216,37 +216,25 @@ func decodeScreenshotBlock(block *hcl.Block) (*Screenshot, hcl.Diagnostics) {
 }
 
 func decodeOptionsBlock(block *hcl.Block) (*Options, hcl.Diagnostics) {
-	var diags hcl.Diagnostics
-	f := &Options{
-		DeclRange: block.DefRange,
-	}
+	s := new(Options)
+	return reduce(
+		s,
+		block,
+		supportsDeclRange(&s.DeclRange),
+		supportsPartialContentSchema(
+			optionsBlockSchema,
+			withAttributeParser("retry_interval", s.setRetryInterval, time.ParseDuration),
+			withAttributeParser("at_least", s.setAtLeast, strconv.Atoi),
+		),
+	)
+}
 
-	content, _, moreDiags := block.Body.PartialContent(optionsBlockSchema)
-	diags = append(diags, moreDiags...)
-	if attr, ok := content.Attributes["retry_interval"]; ok {
-		var text string
-		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &text)
-		if text != "" {
-			dur, err := time.ParseDuration(text)
-			f.RetryInterval = &dur
-			if err != nil {
-				diags = append(diags, &hcl.Diagnostic{
-					Severity: hcl.DiagError,
-					Summary:  "Cannot convert duration",
-					Detail:   fmt.Sprintf("Cannot convert duration: %s", err.Error()),
-					Subject:  attr.Expr.StartRange().Ptr(),
-					Context:  attr.Expr.Range().Ptr(),
-				})
-			}
-		}
-		diags = append(diags, moreDiags...)
-	}
-	if attr, ok := content.Attributes["at_least"]; ok {
-		moreDiags := gohcl.DecodeExpression(attr.Expr, nil, &f.AtLeast)
-		diags = append(diags, moreDiags...)
-	}
+func (o *Options) setRetryInterval(n time.Duration) {
+	o.RetryInterval = &n
+}
 
-	return f, diags
+func (o *Options) setAtLeast(n int) {
+	o.AtLeast = &n
 }
 
 func (*Automation) taskSigil()      {}

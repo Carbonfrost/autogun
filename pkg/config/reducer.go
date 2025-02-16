@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 )
@@ -9,12 +11,16 @@ type mapper func(*hcl.Block) hcl.Diagnostics
 type partialContentMapper func(*hcl.BodyContent) hcl.Diagnostics
 type blockMapping[T any] map[string]func(*hcl.Block) (T, hcl.Diagnostics)
 
-func reduceTask[T Task](a T, block *hcl.Block, mappers ...mapper) (T, hcl.Diagnostics) {
+func reduce[T any](a T, block *hcl.Block, mappers ...mapper) (T, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	for _, m := range mappers {
 		diags = append(diags, m(block)...)
 	}
 	return a, diags
+}
+
+func reduceTask[T Task](a T, block *hcl.Block, mappers ...mapper) (T, hcl.Diagnostics) {
+	return reduce(a, block, mappers...)
 }
 
 func supportsDeclRange(d *hcl.Range) mapper {
@@ -75,20 +81,50 @@ func supportsPartialContentSchema(schema *hcl.BodySchema, att ...partialContentM
 	}
 }
 
-func withAttribute(name string, value any) partialContentMapper {
+func withAttr(name string, fn func(*hcl.Attribute) hcl.Diagnostics) partialContentMapper {
 	return func(content *hcl.BodyContent) hcl.Diagnostics {
 		if attr, ok := content.Attributes[name]; ok {
-			return gohcl.DecodeExpression(attr.Expr, nil, value)
+			return fn(attr)
 		}
 		return nil
 	}
 }
 
+func withAttribute(name string, value any) partialContentMapper {
+	return withAttr(name, func(attr *hcl.Attribute) hcl.Diagnostics {
+		return gohcl.DecodeExpression(attr.Expr, nil, value)
+	})
+}
+
 func withAttributeExpression(name string, value *hcl.Expression) partialContentMapper {
-	return func(content *hcl.BodyContent) hcl.Diagnostics {
-		if attr, ok := content.Attributes[name]; ok {
-			*value = attr.Expr
-		}
+	return withAttr(name, func(attr *hcl.Attribute) hcl.Diagnostics {
+		*value = attr.Expr
 		return nil
-	}
+	})
+}
+
+func withAttributeParser[T any](name string, valueThunk func(T), parser func(string) (T, error)) partialContentMapper {
+	// A valueThunk is used instead of setting the variable directly because
+	// this function can _also_ be used for attributes that are optional
+	// and represented in their models using pointers (instead of values directly).
+	// An example of this is Options.RetryInterval which is *time.Duration
+	return withAttr(name, func(attr *hcl.Attribute) hcl.Diagnostics {
+		var text string
+
+		diags := gohcl.DecodeExpression(attr.Expr, nil, &text)
+		dur, err := parser(text)
+		if err == nil {
+			valueThunk(dur)
+		} else {
+			var it T
+			diags = append(diags, &hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  fmt.Sprintf("Cannot convert %T", it),
+				Detail:   fmt.Sprintf("Cannot convert %T: %s", it, err.Error()),
+				Subject:  attr.Expr.StartRange().Ptr(),
+				Context:  attr.Expr.Range().Ptr(),
+			})
+		}
+		return diags
+	})
 }
