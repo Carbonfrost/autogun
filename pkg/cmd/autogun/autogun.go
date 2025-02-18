@@ -1,10 +1,21 @@
 package autogun
 
 import (
+	"fmt"
+	"runtime/debug"
+	"strings"
+
 	"github.com/Carbonfrost/autogun/pkg/internal/build"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/color"
 )
+
+const versionTemplate = "{{ .App.Name }}, version {{ .App.Version }} {{ ExtendedVersionInfo }}\n"
+
+var keyModules = map[string]bool{
+	"cdproto":  true,
+	"chromedp": true,
+}
 
 func Run(args []string) {
 	NewApp().Run(args)
@@ -19,6 +30,7 @@ func NewApp() *cli.App {
 			cli.Sorted,
 			color.Options{},
 			SetupWorkspace(),
+			versionInfoSupport(),
 		),
 		Flags: []*cli.Flag{
 			{
@@ -54,4 +66,42 @@ func NewApp() *cli.App {
 		},
 		Version: build.Version,
 	}
+}
+
+func versionInfoSupport() cli.Action {
+	var (
+		displayExtended   bool
+		extendVersionInfo = func() string {
+			if !displayExtended {
+				return ""
+			}
+
+			var res []string
+
+			if info, ok := debug.ReadBuildInfo(); ok {
+				for _, d := range info.Deps {
+					index := strings.LastIndex(d.Path, "/")
+					if index > 0 {
+						name := d.Path[index+1:]
+						if keyModules[name] {
+							res = append(res, fmt.Sprintf("%s@%s", name, d.Version))
+						}
+					}
+				}
+			}
+			return strings.Join(res, ", ")
+		}
+
+		triggerExtendedVersionInfo = func(c *cli.Context) error {
+			if c.Occurrences("version") >= 2 {
+				displayExtended = true
+			}
+			return nil
+		}
+	)
+	return cli.Pipeline(
+		cli.Before(cli.ActionFunc(triggerExtendedVersionInfo)),
+		cli.RegisterTemplateFunc("ExtendedVersionInfo", extendVersionInfo),
+		cli.RegisterTemplate("Version", versionTemplate),
+	)
 }
