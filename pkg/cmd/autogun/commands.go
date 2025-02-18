@@ -31,6 +31,7 @@ func FlagsAndArgs() cli.Action {
 	return cli.Pipeline(
 		cli.AddFlags([]*cli.Flag{
 			{Uses: SetBrowserURL()},
+			{Uses: SetEngine()},
 		}...),
 	)
 }
@@ -61,10 +62,25 @@ func SetBrowserURL(v ...string) cli.Action {
 	)
 }
 
+func SetEngine(v ...Engine) cli.Action {
+	return cli.Pipeline(
+		&cli.Prototype{
+			Name:     "engine",
+			Aliases:  []string{"e"},
+			HelpText: "Use the specified {ENGINE} (chromedp)",
+		},
+		withBinding(setEngine, v...),
+	)
+}
+
 func withBinding[V any](binder func(*automation.Allocator, V) error, args ...V) cli.Action {
 	return cli.BindContext(allocatorFromContext, binder, args...)
 }
 
 func allocatorFromContext(c context.Context) *automation.Allocator {
 	return contextual.Workspace(c).EnsureAllocator()
+}
+
+func setEngine(a *automation.Allocator, e Engine) error {
+	return a.SetEngine(e.Value())
 }

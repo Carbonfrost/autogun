@@ -9,10 +9,16 @@ import (
 
 type Allocator struct {
 	BrowserURL string
+	Engine     SupportedBinder
 }
 
 func (a *Allocator) SetBrowserURL(s string) error {
 	a.BrowserURL = s
+	return nil
+}
+
+func (a *Allocator) SetEngine(e SupportedBinder) error {
+	a.Engine = e
 	return nil
 }
 
