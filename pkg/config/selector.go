@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strconv"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 )
@@ -66,6 +68,10 @@ func decodeSelectorBlock(block *hcl.Block) (*Selector, hcl.Diagnostics) {
 			}),
 		),
 	)
+}
+
+func parseFloat(s string) (float64, error) {
+	return strconv.ParseFloat(s, 64)
 }
 
 func parseSelectorBy(s string, dst *SelectorBy, subject *hcl.Range) hcl.Diagnostics {

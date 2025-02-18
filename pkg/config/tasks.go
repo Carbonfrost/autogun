@@ -66,6 +66,7 @@ type Screenshot struct {
 	DeclRange hcl.Range
 	NameRange hcl.Range
 	Name      string
+	Scale     float64
 	Selector  string
 	Selectors []*Selector
 	Options   *Options
@@ -146,6 +147,7 @@ var (
 	screenshotBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
+			{Name: "scale"},
 		},
 		Blocks: []hcl.BlockHeaderSchema{
 			{Type: "selector"},
@@ -327,6 +329,7 @@ func decodeScreenshotBlock(block *hcl.Block) (*Screenshot, hcl.Diagnostics) {
 		supportsPartialContentSchema(
 			screenshotBlockSchema,
 			withAttribute("selector", &s.Selector),
+			withAttributeParser("scale", s.setScale, parseFloat),
 			supportsSelectorBlocks(&s.Selectors, &s.Options),
 		),
 	)
@@ -356,6 +359,10 @@ func (o *Options) setAtLeast(n int) {
 
 func (o *Sleep) setDuration(n time.Duration) {
 	o.Duration = n
+}
+
+func (o *Screenshot) setScale(n float64) {
+	o.Scale = n
 }
 
 func (*Automation) taskSigil()      {}

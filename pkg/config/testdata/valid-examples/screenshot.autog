@@ -6,4 +6,9 @@ automation "screenshot" {
     screenshot "label.png" {
         selector = "#aubergine"
     }
+
+    screenshot "label2.png" {
+        selector = "#aubergine"
+        scale = 0.50
+    }
 }

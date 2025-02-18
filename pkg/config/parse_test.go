@@ -120,6 +120,11 @@ var _ = Describe("LoadConfigFile", func() {
 						"Name":     Equal("label.png"),
 						"Selector": Equal("#aubergine"),
 					}))),
+				"2": And(
+					BeAssignableToTypeOf(&config.Screenshot{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Scale": Equal(float64(0.50)),
+					}))),
 			})),
 
 			Entry("sleep", "sleep.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{

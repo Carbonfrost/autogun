@@ -55,6 +55,12 @@ func bindTask(task config.Task) chromedp.Action {
 			curry := func(file *[]byte) chromedp.Action {
 				return chromedp.Screenshot(sel, file, opts...)
 			}
+			if t.Scale > 0 {
+				curry = func(file *[]byte) chromedp.Action {
+					return chromedp.ScreenshotScale(sel, t.Scale, file, opts...)
+				}
+			}
+
 			return requestOutputFile(filename, curry)
 		}, t.Selector, t.Selectors, t.Options)
 
