@@ -56,6 +56,14 @@ var _ = Describe("LoadConfigFile", func() {
 					}))),
 			})),
 
+			Entry("clear", "clear.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"1": And(
+					BeAssignableToTypeOf(&config.Clear{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Selector": Equal("#ivy"),
+					}))),
+			})),
+
 			Entry("click", "click.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"1": And(
 					BeAssignableToTypeOf(&config.Click{}),

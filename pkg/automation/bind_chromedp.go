@@ -39,6 +39,8 @@ func bindTask(task config.Task) chromedp.Action {
 		return bindSelector(chromedp.DoubleClick, t.Selector, t.Selectors, t.Options)
 	case *config.Blur:
 		return bindSelector(chromedp.Blur, t.Selector, t.Selectors, t.Options)
+	case *config.Clear:
+		return bindSelector(chromedp.Clear, t.Selector, t.Selectors, t.Options)
 	case *config.Sleep:
 		return chromedp.Sleep(t.Duration)
 	case *config.Reload:

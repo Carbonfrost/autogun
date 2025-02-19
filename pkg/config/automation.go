@@ -32,6 +32,9 @@ var (
 				Type: "blur",
 			},
 			{
+				Type: "clear",
+			},
+			{
 				Type: "click",
 			},
 			{
@@ -58,6 +61,7 @@ var (
 
 	mappingTaskBlocks = blockMapping[Task]{
 		"blur":             taskMapping(decodeBlurBlock),
+		"clear":            taskMapping(decodeClearBlock),
 		"click":            taskMapping(decodeClickBlock),
 		"double_click":     taskMapping(decodeDoubleClickBlock),
 		"eval":             taskMapping(decodeEvalBlock),

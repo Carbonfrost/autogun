@@ -41,6 +41,13 @@ type Blur struct {
 	Options   *Options
 }
 
+type Clear struct {
+	DeclRange hcl.Range
+	Selector  string
+	Selectors []*Selector
+	Options   *Options
+}
+
 type Click struct {
 	DeclRange hcl.Range
 	Selector  string
@@ -125,6 +132,16 @@ var (
 	}
 
 	blurBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "selector"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "selector"},
+			{Type: "options"},
+		},
+	}
+
+	clearBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
 		},
@@ -292,6 +309,20 @@ func decodeBlurBlock(block *hcl.Block) (*Blur, hcl.Diagnostics) {
 	)
 }
 
+func decodeClearBlock(block *hcl.Block) (*Clear, hcl.Diagnostics) {
+	f := new(Clear)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			clearBlockSchema,
+			withAttribute("selector", &f.Selector),
+			supportsSelectorBlocks(&f.Selectors, &f.Options),
+		),
+	)
+}
+
 func decodeSleepBlock(block *hcl.Block) (*Sleep, hcl.Diagnostics) {
 	f := new(Sleep)
 	return reduceTask(
@@ -367,6 +398,7 @@ func (o *Screenshot) setScale(n float64) {
 
 func (*Automation) taskSigil()      {}
 func (*Blur) taskSigil()            {}
+func (*Clear) taskSigil()           {}
 func (*Click) taskSigil()           {}
 func (*DoubleClick) taskSigil()     {}
 func (*Eval) taskSigil()            {}

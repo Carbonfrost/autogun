@@ -34,6 +34,7 @@ var _ = Describe("Bind", func() {
 			Entry("click", new(config.Click)),
 			Entry("double_click", new(config.DoubleClick)),
 			Entry("blur", new(config.Blur)),
+			Entry("clear", new(config.Clear)),
 			Entry("eval", new(config.Eval)),
 			Entry("navigate", new(config.Navigate)),
 			Entry("navigate_back", new(config.NavigateBack)),
