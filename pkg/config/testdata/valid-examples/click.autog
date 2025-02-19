@@ -1,31 +1,31 @@
 automation "click" {
-    navigate {
-        url = "https://example.com"
-    }
+  navigate {
+    url = "https://example.com"
+  }
 
-    click {
-        selector = "#olive"
-    }
+  click {
+    selector = "#olive"
+  }
 
-    click {
-        selector {
-            target = "#raspberry"
-        }
+  click {
+    selector {
+      target = "#raspberry"
     }
+  }
 
-    click {
-        selector {
-            target = "#raspberry"
-            by     = "SEARCH"
-            on     = "VISIBLE"
-        }
+  click {
+    selector {
+      target = "#raspberry"
+      by     = "SEARCH"
+      on     = "VISIBLE"
     }
+  }
 
-    double_click {
-        selector {
-            target = "#yellow"
-            by     = "SEARCH"
-            on     = "VISIBLE"
-        }
+  double_click {
+    selector {
+      target = "#yellow"
+      by     = "SEARCH"
+      on     = "VISIBLE"
     }
+  }
 }

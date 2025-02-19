@@ -14,6 +14,11 @@ lint:
 	$(Q) go tool revive ./... 2>&1 || true
 	$(Q) go tool staticcheck -checks 'all,-ST*' $(shell go list ./...) 2>&1	
 
+fmt: -fmt-hcl
+
+-fmt-hcl:	
+	$(Q) go tool hclfmt -w pkg/config/testdata/valid-examples/*.autog
+
 install: -install-autogun
 
 -install-%: build -check-env-PREFIX -check-env-_GO_OUTPUT_DIR

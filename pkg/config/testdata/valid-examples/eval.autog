@@ -1,9 +1,9 @@
 automation "eval" {
-    navigate {
-        url = "https://example.com"
-    }
+  navigate {
+    url = "https://example.com"
+  }
 
-    eval "output" {
-        script = "1"
-    }
+  eval "output" {
+    script = "1"
+  }
 }

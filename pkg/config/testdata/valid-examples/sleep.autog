@@ -1,7 +1,7 @@
 automation "sleep" {
-    sleep {
-        duration = "5s"
-    }
+  sleep {
+    duration = "5s"
+  }
 
-    sleep {}
+  sleep {}
 }

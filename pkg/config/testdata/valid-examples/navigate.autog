@@ -1,14 +1,14 @@
 automation "navigate" {
-    navigate {
-        url = "https://example.com"
-    }
+  navigate {
+    url = "https://example.com"
+  }
 
-    navigate_forward {
-    }
+  navigate_forward {
+  }
 
-    navigate_back {
-    }
+  navigate_back {
+  }
 
-    reload {}
-    stop {}
+  reload {}
+  stop {}
 }

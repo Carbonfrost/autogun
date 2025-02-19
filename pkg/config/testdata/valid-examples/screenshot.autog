@@ -1,14 +1,14 @@
 automation "screenshot" {
-    navigate {
-        url = "https://example.com"
-    }
+  navigate {
+    url = "https://example.com"
+  }
 
-    screenshot "label.png" {
-        selector = "#aubergine"
-    }
+  screenshot "label.png" {
+    selector = "#aubergine"
+  }
 
-    screenshot "label2.png" {
-        selector = "#aubergine"
-        scale = 0.50
-    }
+  screenshot "label2.png" {
+    selector = "#aubergine"
+    scale    = 0.50
+  }
 }

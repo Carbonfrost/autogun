@@ -1,9 +1,9 @@
 automation "clear" {
-    navigate {
-        url = "https://example.com"
-    }
+  navigate {
+    url = "https://example.com"
+  }
 
-    clear {
-        selector = "#ivy"
-    }
+  clear {
+    selector = "#ivy"
+  }
 }

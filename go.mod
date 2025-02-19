@@ -62,6 +62,7 @@ require (
 	github.com/quasilyte/regex/syntax v0.0.0-20210819130434-b3f0c404a727 // indirect
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20240213143201-ec583247a57a // indirect
 	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
@@ -76,6 +77,7 @@ require (
 
 tool (
 	github.com/go-critic/go-critic/cmd/gocritic
+	github.com/hashicorp/hcl/v2/cmd/hclfmt
 	github.com/maxbrunsfeld/counterfeiter/v6
 	github.com/mgechev/revive
 	github.com/onsi/ginkgo/v2/ginkgo
