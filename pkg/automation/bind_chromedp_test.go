@@ -43,6 +43,7 @@ var _ = Describe("Bind", func() {
 			Entry("screenshot", new(config.Screenshot)),
 			Entry("sleep", new(config.Sleep)),
 			Entry("stop", new(config.Stop)),
+			Entry("title", new(config.Title)),
 			Entry("wait_visible", new(config.WaitVisible)),
 		)
 	})

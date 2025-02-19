@@ -27,6 +27,12 @@ type NavigateBack struct {
 	DeclRange hcl.Range
 }
 
+type Title struct {
+	DeclRange hcl.Range
+	NameRange hcl.Range
+	Name      string
+}
+
 type Eval struct {
 	DeclRange hcl.Range
 	NameRange hcl.Range
@@ -110,6 +116,8 @@ var (
 			{Name: "script"},
 		},
 	}
+
+	titleBlockSchema = &hcl.BodySchema{}
 
 	clickBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
@@ -249,6 +257,19 @@ func decodeStopBlock(block *hcl.Block) (*Stop, hcl.Diagnostics) {
 		supportsDeclRange(&f.DeclRange),
 		supportsPartialContentSchema(
 			stopBlockSchema,
+		),
+	)
+}
+
+func decodeTitleBlock(block *hcl.Block) (*Title, hcl.Diagnostics) {
+	f := new(Title)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsOptionalLabel(&f.Name, &f.NameRange),
+		supportsPartialContentSchema(
+			titleBlockSchema,
 		),
 	)
 }
@@ -409,6 +430,7 @@ func (*Reload) taskSigil()          {}
 func (*Screenshot) taskSigil()      {}
 func (*Sleep) taskSigil()           {}
 func (*Stop) taskSigil()            {}
+func (*Title) taskSigil()           {}
 func (*WaitVisible) taskSigil()     {}
 
 func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnostic {

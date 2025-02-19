@@ -29,6 +29,10 @@ var (
 				LabelNames: []string{"name"},
 			},
 			{
+				Type:       "title",
+				LabelNames: []string{"name"},
+			},
+			{
 				Type: "blur",
 			},
 			{
@@ -72,6 +76,7 @@ var (
 		"reload":           taskMapping(decodeReloadBlock),
 		"sleep":            taskMapping(decodeSleepBlock),
 		"stop":             taskMapping(decodeStopBlock),
+		"title":            taskMapping(decodeTitleBlock),
 		"wait_visible":     taskMapping(decodeWaitVisibleBlock),
 	}
 )

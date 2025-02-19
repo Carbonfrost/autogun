@@ -15,6 +15,7 @@ import (
 type produceQueryActionFunc = func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction
 type produceFileUserActionFunc = func(*[]byte) chromedp.Action
 type usingVariableFunc = func(msg *json.RawMessage) chromedp.Action
+type usingStringVariableFunc = func(txt *string) chromedp.Action
 
 func bindTask(task config.Task) chromedp.Action {
 	switch t := task.(type) {
@@ -72,6 +73,16 @@ func bindTask(task config.Task) chromedp.Action {
 				err := chromedp.Evaluate(t.Script, msg).Do(c)
 				fmt.Printf("Evaluate %s\n", t.Name)
 				evalContextFrom(c).Variables[t.Name] = umarshalData(*msg)
+				return err
+			})
+		})
+
+	case *config.Title:
+		return usingStringVariable(t.Name, func(str *string) chromedp.Action {
+			return chromedp.ActionFunc(func(c context.Context) error {
+				err := chromedp.Title(str).Do(c)
+				v, _ := gocty.ToCtyValue(*str, cty.String)
+				evalContextFrom(c).Variables[t.Name] = v
 				return err
 			})
 		})
@@ -185,5 +196,21 @@ func usingVariable(name string, fn usingVariableFunc) chromedp.Action {
 		var msg json.RawMessage
 		res.Outputs[name] = &msg
 		return fn(&msg).Do(c)
+	})
+}
+
+func usingStringVariable(name string, fn usingStringVariableFunc) chromedp.Action {
+	return chromedp.ActionFunc(func(c context.Context) error {
+		res := mustAutomationResult(c)
+		var str string
+
+		err := fn(&str).Do(c)
+
+		var msg json.RawMessage
+		msg, _ = json.Marshal(str)
+
+		res.Outputs[name] = &msg
+
+		return err
 	})
 }

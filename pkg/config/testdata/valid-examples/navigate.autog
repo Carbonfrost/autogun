@@ -11,4 +11,6 @@ automation "navigate" {
 
   reload {}
   stop {}
+
+  title "title" {}
 }
