@@ -2,14 +2,16 @@ package automation
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/chromedp/chromedp"
-	"github.com/hashicorp/hcl/v2"
 )
 
 type Allocator struct {
 	BrowserURL string
 	Engine     SupportedBinder
+	DeviceID   string
 }
 
 func (a *Allocator) SetBrowserURL(s string) error {
@@ -22,10 +24,23 @@ func (a *Allocator) SetEngine(e SupportedBinder) error {
 	return nil
 }
 
+func (a *Allocator) SetDeviceID(v string) error {
+	a.DeviceID = v
+
+	if v != "" {
+		dev, ok := a.resolveDevice()
+		if !ok {
+			fmt.Fprintf(os.Stderr, "warning: device %q not found\n", dev)
+		}
+	}
+	return nil
+}
+
 func (a *Allocator) newContext(parent context.Context) (context.Context, context.CancelFunc) {
-	parent = context.WithValue(parent, evalContextKey, &hcl.EvalContext{})
+	ctx := withEvalContext(parent)
+
 	if a.BrowserURL != "" {
-		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(parent, a.BrowserURL)
+		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(ctx, a.BrowserURL)
 		res, cancelInner := chromedp.NewContext(
 			allocatorContext,
 		)
@@ -36,6 +51,11 @@ func (a *Allocator) newContext(parent context.Context) (context.Context, context
 	}
 
 	return chromedp.NewContext(
-		parent,
+		ctx,
 	)
+}
+
+func (a *Allocator) resolveDevice() (dev chromedp.Device, ok bool) {
+	dev, ok = devices[a.DeviceID]
+	return
 }

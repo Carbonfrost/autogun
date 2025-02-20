@@ -23,7 +23,13 @@ func Execute(ctx context.Context, allocator *Allocator, a *Automation) (*Result,
 	)
 	defer cancel()
 
-	return res, chromedp.Run(ctx, a)
+	var emulate Task = TaskFunc(nil)
+	if dev, ok := allocator.resolveDevice(); ok {
+		fmt.Fprintf(os.Stderr, "Emulating device %s (%s)\n", dev.Device().Name, allocator.DeviceID)
+		emulate = chromedp.Emulate(dev)
+	}
+
+	return res, chromedp.Run(ctx, emulate, a)
 }
 
 func newResult() *Result {
@@ -48,12 +54,4 @@ func (r *Result) PersistOutputFiles() {
 			continue
 		}
 	}
-}
-
-func mustAutomationResult(c context.Context) *Result {
-	return c.Value(automationResultKey).(*Result)
-}
-
-func withAutomationResult(c context.Context, ar *Result) context.Context {
-	return context.WithValue(c, automationResultKey, ar)
 }

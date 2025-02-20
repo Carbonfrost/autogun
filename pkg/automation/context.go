@@ -9,8 +9,10 @@ import (
 
 type contextKey string
 
-const evalContextKey contextKey = "evalContext"
-const automationResultKey contextKey = "automationResult"
+const (
+	evalContextKey      contextKey = "evalContext"
+	automationResultKey contextKey = "automationResult"
+)
 
 func evalContext(c context.Context, expr hcl.Expression) (cty.Value, error) {
 	ec := evalContextFrom(c)
@@ -25,4 +27,16 @@ func evalContextFrom(c context.Context) *hcl.EvalContext {
 
 	}
 	return ec
+}
+
+func mustAutomationResult(c context.Context) *Result {
+	return c.Value(automationResultKey).(*Result)
+}
+
+func withAutomationResult(c context.Context, ar *Result) context.Context {
+	return context.WithValue(c, automationResultKey, ar)
+}
+
+func withEvalContext(c context.Context) context.Context {
+	return context.WithValue(c, evalContextKey, &hcl.EvalContext{})
 }

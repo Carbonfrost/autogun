@@ -23,6 +23,9 @@ type Automation struct {
 }
 
 func (f TaskFunc) Do(c context.Context) error {
+	if f == nil {
+		return nil
+	}
 	return f(c)
 }
 

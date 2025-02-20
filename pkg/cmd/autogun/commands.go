@@ -3,35 +3,18 @@ package autogun
 import (
 	"context"
 	"fmt"
-	"maps"
-	"slices"
-	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/contextual"
 	cli "github.com/Carbonfrost/joe-cli"
-	"github.com/chromedp/chromedp/device"
 )
-
-var devices map[string]device.Info
-
-func init() {
-	devices = map[string]device.Info{}
-	for i := device.Reset; i <= device.MotoG4landscape; i++ {
-		id := strings.ReplaceAll(i.Device().Name, " ", "")
-		id = strings.ReplaceAll(id, ")", "")
-		id = strings.ReplaceAll(id, "(", "_")
-		id = strings.ReplaceAll(id, "+", "plus")
-
-		devices[id] = i.Device()
-	}
-}
 
 func FlagsAndArgs() cli.Action {
 	return cli.Pipeline(
 		cli.AddFlags([]*cli.Flag{
 			{Uses: SetBrowserURL()},
 			{Uses: SetEngine()},
+			{Uses: SetDeviceID()},
 		}...),
 	)
 }
@@ -45,7 +28,7 @@ func ListDevices() cli.Action {
 			Value:    new(bool),
 		},
 		cli.At(cli.ActionTiming, cli.ActionOf(func() {
-			for _, s := range slices.Sorted(maps.Keys(devices)) {
+			for _, s := range automation.DeviceIDs() {
 				fmt.Println(s)
 			}
 		})))
@@ -56,7 +39,7 @@ func SetBrowserURL(v ...string) cli.Action {
 		&cli.Prototype{
 			Name:     "browser",
 			Aliases:  []string{"b"},
-			HelpText: "Connect to the running browser instance by {URL}",
+			HelpText: "connect to the running browser instance by {URL}",
 		},
 		withBinding((*automation.Allocator).SetBrowserURL, v...),
 	)
@@ -67,9 +50,20 @@ func SetEngine(v ...Engine) cli.Action {
 		&cli.Prototype{
 			Name:     "engine",
 			Aliases:  []string{"e"},
-			HelpText: "Use the specified {ENGINE} (chromedp)",
+			HelpText: "use the specified {ENGINE} (chromedp)",
 		},
 		withBinding(setEngine, v...),
+	)
+}
+
+func SetDeviceID(v ...string) cli.Action {
+	return cli.Pipeline(
+		&cli.Prototype{
+			Name:     "device",
+			Aliases:  []string{"D"},
+			HelpText: "use the specified device {URL}",
+		},
+		withBinding((*automation.Allocator).SetDeviceID, v...),
 	)
 }
 
