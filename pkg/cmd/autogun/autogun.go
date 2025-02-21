@@ -42,6 +42,7 @@ func NewApp() *cli.App {
 			{Uses: ListDevices()},
 		},
 		Commands: []*cli.Command{
+			Fmt(),
 			{
 				Name:     "run",
 				HelpText: "Run the specified automations",
@@ -56,6 +57,7 @@ func NewApp() *cli.App {
 						Value: &cli.Expression{
 							Exprs: Exprs(),
 						},
+						Options: cli.SortedExprs,
 					},
 				},
 				Uses: cli.Pipeline(
