@@ -63,6 +63,7 @@ func NewApp() *cli.App {
 				),
 				Action: RunAutomation,
 			},
+			Check(),
 		},
 		Version: build.Version,
 	}
