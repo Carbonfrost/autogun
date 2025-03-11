@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -432,12 +431,3 @@ func (*Sleep) taskSigil()           {}
 func (*Stop) taskSigil()            {}
 func (*Title) taskSigil()           {}
 func (*WaitVisible) taskSigil()     {}
-
-func diagInvalidValue(value string, ty string, subject *hcl.Range) *hcl.Diagnostic {
-	return &hcl.Diagnostic{
-		Severity: hcl.DiagError,
-		Summary:  "Invalid value",
-		Detail:   fmt.Sprintf("The value %q is not supported for %s", value, ty),
-		Subject:  subject,
-	}
-}

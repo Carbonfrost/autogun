@@ -1,10 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/gohcl"
 )
 
 type Selector struct {
@@ -45,6 +45,14 @@ var (
 	}
 )
 
+func (s *Selector) setOn(n SelectorOn) {
+	s.On = n
+}
+
+func (s *Selector) setBy(n SelectorBy) {
+	s.By = n
+}
+
 func decodeSelectorBlock(block *hcl.Block) (*Selector, hcl.Diagnostics) {
 	f := new(Selector)
 	return reduce(
@@ -54,18 +62,8 @@ func decodeSelectorBlock(block *hcl.Block) (*Selector, hcl.Diagnostics) {
 		supportsPartialContentSchema(
 			selectorBlockSchema,
 			withAttribute("target", &f.Target),
-			withAttr("by", func(attr *hcl.Attribute) hcl.Diagnostics {
-				var in string
-				diags := gohcl.DecodeExpression(attr.Expr, nil, &in)
-				moreDiags := parseSelectorBy(in, &f.By, &attr.Range)
-				return append(diags, moreDiags...)
-			}),
-			withAttr("on", func(attr *hcl.Attribute) hcl.Diagnostics {
-				var in string
-				diags := gohcl.DecodeExpression(attr.Expr, nil, &in)
-				moreDiags := parseSelectorOn(in, &f.On, &attr.Range)
-				return append(diags, moreDiags...)
-			}),
+			withAttributeParser("by", f.setBy, parseSelectorBy),
+			withAttributeParser("on", f.setOn, parseSelectorOn),
 		),
 	)
 }
@@ -74,53 +72,40 @@ func parseFloat(s string) (float64, error) {
 	return strconv.ParseFloat(s, 64)
 }
 
-func parseSelectorBy(s string, dst *SelectorBy, subject *hcl.Range) hcl.Diagnostics {
+func parseSelectorBy(s string) (result SelectorBy, err error) {
 	switch s {
 	case "SEARCH", "search":
-		*dst = BySearch
-		return nil
+		return BySearch, nil
 	case "JS_PATH", "js_path":
-		*dst = ByJSPath
-		return nil
+		return ByJSPath, nil
 	case "ID", "id":
-		*dst = ByID
-		return nil
+		return ByID, nil
 	case "QUERY", "query":
-		*dst = ByQuery
-		return nil
+		return ByQuery, nil
 	case "QUERY_ALL", "query_all":
-		*dst = ByQueryAll
-		return nil
+		return ByQueryAll, nil
 	}
-	return hcl.Diagnostics{
-		diagInvalidValue(s, "by", subject),
-	}
+	err = fmt.Errorf("value %q is not a valid value", s)
+	return
 }
 
-func parseSelectorOn(s string, dst *SelectorOn, subject *hcl.Range) hcl.Diagnostics {
+func parseSelectorOn(s string) (result SelectorOn, err error) {
 	switch s {
 	case "READY", "ready":
-		*dst = OnReady
-		return nil
+		return OnReady, nil
 	case "VISIBLE", "visible":
-		*dst = OnVisible
-		return nil
+		return OnVisible, nil
 	case "NOT_VISIBLE", "not_visible":
-		*dst = OnNotVisible
-		return nil
+		return OnNotVisible, nil
 	case "ENABLED", "enabled":
-		*dst = OnEnabled
-		return nil
+		return OnEnabled, nil
 	case "SELECTED", "selected":
-		*dst = OnSelected
-		return nil
+		return OnSelected, nil
 	case "NOT_PRESENT", "not_present":
-		*dst = OnNotPresent
-		return nil
+		return OnNotPresent, nil
 	}
-	return hcl.Diagnostics{
-		diagInvalidValue(s, "on", subject),
-	}
+	err = fmt.Errorf("value %q is not a valid value", s)
+	return
 }
 
 func supportsSelectorBlocks(sels *[]*Selector, opts **Options) partialContentMapper {
