@@ -12,7 +12,7 @@ import (
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
-type produceQueryActionFunc = func(interface{}, ...chromedp.QueryOption) chromedp.QueryAction
+type produceQueryActionFunc = func(any, ...chromedp.QueryOption) chromedp.QueryAction
 type produceFileUserActionFunc = func(*[]byte) chromedp.Action
 type usingVariableFunc = func(msg *json.RawMessage) chromedp.Action
 type usingStringVariableFunc = func(txt *string) chromedp.Action

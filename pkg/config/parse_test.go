@@ -164,7 +164,7 @@ func validExample(hclFile string) (*config.File, error) {
 	return p.LoadConfigFile(".weyoun/site.hcl")
 }
 
-func toString(v interface{}) interface{} {
+func toString(v any) any {
 	d, _ := v.(hcl.Expression).Value(nil)
 	return d.AsString()
 }
