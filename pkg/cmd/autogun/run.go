@@ -13,6 +13,7 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/contextual"
 	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
+	"github.com/Carbonfrost/joe-cli/extensions/expr"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
@@ -26,7 +27,7 @@ func RunAutomation(c *cli.Context) error {
 		return err
 	}
 
-	exp := ensurePrinter(c.Expression("expression"))
+	exp := ensurePrinter(expr.FromContext(c, "expression"))
 	err = exp.Evaluate(c, auto)
 	if err != nil {
 		return err

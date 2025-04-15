@@ -7,10 +7,11 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/config"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
+	"github.com/Carbonfrost/joe-cli/extensions/expr"
 )
 
-func Exprs() []*cli.Expr {
-	return []*cli.Expr{
+func Exprs() []*expr.Expr {
+	return []*expr.Expr{
 		{
 			Name:     "run", // -run FILE
 			HelpText: "run an automation from a FILE",
@@ -82,46 +83,46 @@ func Exprs() []*cli.Expr {
 	}
 }
 
-func RunSource(source string) cli.Evaluator {
+func RunSource(source string) expr.Evaluator {
 	return wrapTaskAsEvaluator(runSource(source))
 }
 
-func Navigate(url string) cli.Evaluator {
+func Navigate(url string) expr.Evaluator {
 	nav, _ := navigate(url)
 	// TODO Handle this error
 	return wrapTaskAsEvaluator(nav)
 }
 
-func Flow(name string) cli.Evaluator {
+func Flow(name string) expr.Evaluator {
 	return wrapTaskAsEvaluator(flow(name))
 }
 
-func NavigateForward() cli.Evaluator {
+func NavigateForward() expr.Evaluator {
 	return wrapDeferredTaskAsEvaluator(&config.NavigateForward{})
 }
 
-func NavigateBack() cli.Evaluator {
+func NavigateBack() expr.Evaluator {
 	return wrapDeferredTaskAsEvaluator(&config.NavigateBack{})
 }
 
-func Sleep(d time.Duration) cli.Evaluator {
+func Sleep(d time.Duration) expr.Evaluator {
 	return wrapDeferredTaskAsEvaluator(&config.Sleep{Duration: d})
 }
 
-func Reload() cli.Evaluator {
+func Reload() expr.Evaluator {
 	return wrapDeferredTaskAsEvaluator(&config.Reload{})
 }
 
-func Stop() cli.Evaluator {
+func Stop() expr.Evaluator {
 	return wrapDeferredTaskAsEvaluator(&config.Stop{})
 }
 
-func ensurePrinter(e *cli.Expression) *cli.Expression {
+func ensurePrinter(e *expr.Expression) *expr.Expression {
 	// TODO In the future, printing output from the workflow is implied behavior
 	return e
 }
 
-func wrapDeferredTaskAsEvaluator(act config.Task) cli.EvaluatorFunc {
+func wrapDeferredTaskAsEvaluator(act config.Task) expr.EvaluatorFunc {
 	return func(_ *cli.Context, v any, yield func(any) error) error {
 		a := v.(*automation.Automation)
 
@@ -135,7 +136,7 @@ func wrapDeferredTaskAsEvaluator(act config.Task) cli.EvaluatorFunc {
 	}
 }
 
-func wrapTaskAsEvaluator(act automation.Task) cli.EvaluatorFunc {
+func wrapTaskAsEvaluator(act automation.Task) expr.EvaluatorFunc {
 	return func(_ *cli.Context, v any, yield func(any) error) error {
 		appendTask(v.(*automation.Automation), act)
 		return yield(v)

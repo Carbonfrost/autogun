@@ -8,6 +8,7 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/internal/build"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/color"
+	"github.com/Carbonfrost/joe-cli/extensions/expr"
 )
 
 const versionTemplate = "{{ .App.Name }}, version {{ .App.Version }} {{ ExtendedVersionInfo }}\n"
@@ -54,7 +55,7 @@ func NewApp() *cli.App {
 					},
 					{
 						Name: "expression",
-						Value: &cli.Expression{
+						Value: &expr.Expression{
 							Exprs: Exprs(),
 						},
 						Options: cli.SortedExprs,
