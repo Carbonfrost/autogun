@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
@@ -12,7 +13,8 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/contextual"
 	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
-	"github.com/chromedp/chromedp"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
 
 func RunAutomation(c *cli.Context) error {
@@ -56,7 +58,11 @@ func convertSources(c *cli.Context) (*automation.Automation, error) {
 			return nil, fmt.Errorf("not yet implemented: read automation from stdin")
 
 		case looksLikeURL(source):
-			result = append(result, chromedp.Navigate(source))
+			nav, err := navigate(source)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, nav)
 
 		default:
 			result = append(result, runSource(source))
@@ -65,6 +71,19 @@ func convertSources(c *cli.Context) (*automation.Automation, error) {
 	return &automation.Automation{
 		Tasks: result,
 	}, nil
+}
+
+func navigate(u string) (automation.Task, error) {
+	urlExp, _ := hclsyntax.ParseExpression([]byte(strconv.Quote(u)), "-", hcl.Pos{})
+
+	// TODO Should obtain the appropriate binder
+	task, err := automation.UsingChromedp.BindTask(&config.Navigate{
+		URL: urlExp,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }
 
 func runSource(source string) automation.Task {
