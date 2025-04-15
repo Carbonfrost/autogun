@@ -5,6 +5,7 @@ import (
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	cli "github.com/Carbonfrost/joe-cli"
+	"github.com/Carbonfrost/joe-cli/extensions/bind"
 	"github.com/chromedp/chromedp"
 )
 
@@ -20,7 +21,7 @@ func Exprs() []*cli.Expr {
 					NArg:  1,
 				},
 			},
-			Evaluate: bindString("file", RunSource),
+			Evaluate: bind.Evaluator(RunSource, bind.String("file")),
 		},
 		{
 			Name:     "flow", // -flow NAME
@@ -32,7 +33,7 @@ func Exprs() []*cli.Expr {
 					NArg:  1,
 				},
 			},
-			Evaluate: bindString("name", Flow),
+			Evaluate: bind.Evaluator(Flow, bind.String("name")),
 		},
 		{
 			Name:     "forward", // -forward
@@ -64,7 +65,7 @@ func Exprs() []*cli.Expr {
 					NArg:  1,
 				},
 			},
-			Evaluate: bindDuration("duration", Sleep),
+			Evaluate: bind.Evaluator(Sleep, bind.Duration("duration")),
 		},
 	}
 }
@@ -95,18 +96,6 @@ func Reload() cli.Evaluator {
 
 func Stop() cli.Evaluator {
 	return wrapTaskAsEvaluator(chromedp.Stop())
-}
-
-func bindString(arg string, fn func(string) cli.Evaluator) cli.EvaluatorFunc {
-	return func(c *cli.Context, v any, yield func(any) error) error {
-		return fn(c.String(arg)).Evaluate(c, v, yield)
-	}
-}
-
-func bindDuration(arg string, fn func(time.Duration) cli.Evaluator) cli.EvaluatorFunc {
-	return func(c *cli.Context, v any, yield func(any) error) error {
-		return fn(c.Duration(arg)).Evaluate(c, v, yield)
-	}
 }
 
 func ensurePrinter(e *cli.Expression) *cli.Expression {
