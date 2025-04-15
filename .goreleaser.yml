@@ -1,6 +1,7 @@
-before:
-  hooks:
-    - go mod tidy
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
 
 builds:
   - main: ./cmd/autogun
@@ -19,10 +20,13 @@ archives:
   - id: autogun
     builds:
       - autogun
-    name_template: "autogun_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    replacements:
-      "386": i386
-      amd64: x86_64
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
     format_overrides:
       - goos: windows
         format: zip
@@ -31,7 +35,7 @@ brews:
   - name: autogun
     ids:
     - autogun
-    tap: &tap
+    repository: 
       owner: Carbonfrost
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
@@ -40,7 +44,7 @@ brews:
     homepage: "https://github.com/Carbonfrost/autogun"
 
 changelog:
-  skip: true
+  disable: true
 
 checksum:
   name_template: 'checksums.txt'
