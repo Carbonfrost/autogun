@@ -8,7 +8,7 @@ import (
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func Check() *cli.Command {
@@ -38,8 +38,8 @@ func Check() *cli.Command {
 func checkCommand(c *cli.Context) error {
 	var anyErrors bool
 	parser := hclparse.NewParser()
-	color := terminal.IsTerminal(int(os.Stderr.Fd()))
-	w, _, err := terminal.GetSize(int(os.Stdout.Fd()))
+	color := term.IsTerminal(int(os.Stderr.Fd()))
+	w, _, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		w = 80
 	}
