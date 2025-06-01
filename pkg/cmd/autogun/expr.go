@@ -83,6 +83,11 @@ func Exprs() []*expr.Expr {
 			},
 			Evaluate: bind.Evaluator(Sleep, bind.Duration("duration")),
 		},
+		{
+			Name:     "title", // -title
+			HelpText: "store the title of the current page",
+			Evaluate: Title("title"),
+		},
 	}
 }
 
@@ -118,6 +123,10 @@ func Reload() expr.Evaluator {
 
 func Stop() expr.Evaluator {
 	return wrapDeferredTaskAsEvaluator(&config.Stop{})
+}
+
+func Title(name string) expr.Evaluator {
+	return wrapDeferredTaskAsEvaluator(&config.Title{Name: name})
 }
 
 func ensurePrinter(e *expr.Expression) *expr.Expression {
