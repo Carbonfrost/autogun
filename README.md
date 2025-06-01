@@ -38,6 +38,10 @@ Check out [our docs][] for more guidance on how to use Autogun.
 2. Run `go build ./...`
 3. Run the tests using `go test ./...`
 
+## Code of conduct
+
+This project has adopted a [Code of conduct](.github/CODE_OF_CONDUCT.md).
+
 ## License
 
 This project uses a [BSD-style license](LICENSE).
