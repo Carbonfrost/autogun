@@ -64,7 +64,7 @@ func SetDeviceID(v ...string) cli.Action {
 		&cli.Prototype{
 			Name:     "device",
 			Aliases:  []string{"D"},
-			HelpText: "use the specified device {URL}",
+			HelpText: "use the specified device {ID}",
 		},
 		withBinding((*automation.Allocator).SetDeviceID, v...),
 	)
