@@ -6,6 +6,8 @@ package autogun
 import (
 	"context"
 	"fmt"
+	"net"
+	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/contextual"
@@ -44,8 +46,16 @@ func SetBrowserURL(v ...string) cli.Action {
 			Aliases:  []string{"b"},
 			HelpText: "connect to the running browser instance by {URL}",
 		},
-		withBinding((*automation.Allocator).SetBrowserURL, v...),
+		withBinding(setBrowserURLHelper, v...),
 	)
+}
+
+func setBrowserURLHelper(a *automation.Allocator, source string) error {
+	// Interpreted as default protocol on localhost when just a port
+	if port, ok := strings.CutPrefix(source, ":"); ok {
+		source = "ws://" + net.JoinHostPort("127.0.0.1", port)
+	}
+	return a.SetBrowserURL(source)
 }
 
 func SetEngine(v ...Engine) cli.Action {
