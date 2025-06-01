@@ -14,7 +14,7 @@ import (
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
 )
 
-const versionTemplate = "{{ .App.Name }}, version {{ .App.Version }} {{ ExtendedVersionInfo }}\n"
+const versionTemplate = "{{ .App.Name }}, version {{ .App.Version }}{{ ExtendedVersionInfo }}\n"
 
 var keyModules = map[string]bool{
 	"cdproto":  true,
@@ -83,7 +83,8 @@ func versionInfoSupport() cli.Action {
 				return ""
 			}
 
-			var res []string
+			// Contains an empty string so that there is a leading comma
+			res := []string{""}
 
 			if info, ok := debug.ReadBuildInfo(); ok {
 				for _, d := range info.Deps {
@@ -110,5 +111,6 @@ func versionInfoSupport() cli.Action {
 		cli.Before(cli.ActionFunc(triggerExtendedVersionInfo)),
 		cli.RegisterTemplateFunc("ExtendedVersionInfo", extendVersionInfo),
 		cli.RegisterTemplate("Version", versionTemplate),
+		cli.Customize("--version", cli.AddAlias("V")),
 	)
 }
