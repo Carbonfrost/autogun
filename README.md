@@ -5,7 +5,7 @@
 
 <h1 align="center">
   <br>
-    AUTOGUN
+    <img src="autogun.png" alt="Autogun logo">
   <br>
   <br>
 </h1>
