@@ -28,6 +28,20 @@ func Exprs() []*expr.Expr {
 			Evaluate: bind.Evaluator(RunSource, bind.String("file")),
 		},
 		{
+			Name:     "eval", // -eval SCRIPT
+			HelpText: "evaluate a script",
+			Args: []*cli.Arg{
+				{
+					Name:      "script",
+					Value:     new(string),
+					NArg:      1,
+					UsageText: "SCRIPT | @FILE",
+					Options:   cli.AllowFileReference,
+				},
+			},
+			Evaluate: bind.Evaluator(Eval, bind.String("script")),
+		},
+		{
 			Name:     "navigate", // -navigate URL
 			HelpText: "navigate to the specified {URL}",
 			Args: []*cli.Arg{
@@ -103,6 +117,13 @@ func Navigate(url string) expr.Evaluator {
 
 func Flow(name string) expr.Evaluator {
 	return wrapTaskAsEvaluator(flow(name))
+}
+
+func Eval(script string) expr.Evaluator {
+	return wrapDeferredTaskAsEvaluator(&config.Eval{
+		Script: script,
+		Name:   "_1",
+	})
 }
 
 func NavigateForward() expr.Evaluator {
