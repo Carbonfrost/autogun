@@ -78,16 +78,14 @@ func convertSources(c *cli.Context) (*automation.Automation, error) {
 }
 
 func navigate(u string) (automation.Task, error) {
-	urlExp, _ := hclsyntax.ParseExpression([]byte(strconv.Quote(u)), "-", hcl.Pos{})
-
-	// TODO Should obtain the appropriate binder
-	task, err := automation.UsingChromedp.BindTask(&config.Navigate{
+	urlExp, _ := parseHCL(u)
+	return deferredTask(&config.Navigate{
 		URL: urlExp,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return task, nil
+}
+
+func parseHCL(u string) (hcl.Expression, error) {
+	return hclsyntax.ParseExpression([]byte(strconv.Quote(u)), "-", hcl.Pos{})
 }
 
 func runSource(source string) automation.Task {

@@ -214,9 +214,7 @@ func ensurePrinter(e *expr.Expression) *expr.Expression {
 func wrapDeferredTaskAsEvaluator(act config.Task) expr.EvaluatorFunc {
 	return func(_ *cli.Context, v any, yield func(any) error) error {
 		a := v.(*automation.Automation)
-
-		// TODO Should obtain the appropriate binder
-		task, err := automation.UsingChromedp.BindTask(act)
+		task, err := deferredTask(act)
 		if err != nil {
 			return err
 		}
@@ -234,4 +232,9 @@ func wrapTaskAsEvaluator(act automation.Task) expr.EvaluatorFunc {
 
 func appendTask(a *automation.Automation, t automation.Task) {
 	a.Tasks = append(a.Tasks, t)
+}
+
+func deferredTask(act config.Task) (automation.Task, error) {
+	// TODO Should obtain the appropriate binder
+	return automation.UsingChromedp.BindTask(act)
 }
