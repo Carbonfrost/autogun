@@ -16,6 +16,9 @@ type Task interface {
 // TaskFunc implements a task from function
 type TaskFunc func(context.Context) error
 
+// Tasks provides a sequence of tasks
+type Tasks []Task
+
 // Automation is a multi-step automated process
 type Automation struct {
 	// Name gets the name of automation
@@ -33,7 +36,11 @@ func (f TaskFunc) Do(c context.Context) error {
 }
 
 func (a *Automation) Do(c context.Context) error {
-	for _, task := range a.Tasks {
+	return Tasks(a.Tasks).Do(c)
+}
+
+func (t Tasks) Do(c context.Context) error {
+	for _, task := range t {
 		err := task.Do(c)
 		if err != nil {
 			return err
