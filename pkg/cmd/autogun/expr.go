@@ -4,6 +4,8 @@
 package autogun
 
 import (
+	"cmp"
+	"strings"
 	"time"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
@@ -11,7 +13,18 @@ import (
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
+	"github.com/Carbonfrost/joe-cli/extensions/structure"
 )
+
+type ScreenshotArgs struct {
+	File          string            `mapstructure:"file"`
+	Scale         *float64          `mapstructure:"scale"`
+	Selector      string            `mapstructure:"selector"`
+	By            config.SelectorBy `mapstructure:"by"`
+	On            config.SelectorOn `mapstructure:"on"`
+	RetryInterval *time.Duration    `mapstructure:"retry_interval"`
+	AtLeast       *int              `mapstructure:"at_least"`
+}
 
 func Exprs() []*expr.Expr {
 	return []*expr.Expr{
@@ -98,11 +111,54 @@ func Exprs() []*expr.Expr {
 			Evaluate: bind.Evaluator(Sleep, bind.Duration("duration")),
 		},
 		{
+			Name:     "screenshot", // -screenshot [scale=SCALE,]
+			HelpText: "capture a screenshot",
+			Args: []*cli.Arg{
+				{
+					Name:  "options",
+					Value: structure.Of(new(ScreenshotArgs)),
+					NArg: cli.OptionalArg(func(s string) bool {
+						return !strings.HasPrefix(s, "-")
+					}),
+				},
+			},
+			Evaluate: bind.Evaluator(Screenshot, bind.Value[*ScreenshotArgs]("options")),
+		},
+		{
 			Name:     "title", // -title
 			HelpText: "store the title of the current page",
 			Evaluate: Title("title"),
 		},
 	}
+}
+
+func Screenshot(s *ScreenshotArgs) expr.Evaluator {
+	scale := 1.0
+	if s.Scale != nil {
+		scale = *s.Scale
+	}
+
+	// TODO This selector logic is likely temporary until a selector expression is finalized
+	var selectors []*config.Selector
+	if s.Selector != "" {
+		selectors = []*config.Selector{
+			{
+				Target: s.Selector,
+				By:     s.By,
+				On:     s.On,
+			},
+		}
+	}
+
+	return wrapDeferredTaskAsEvaluator(&config.Screenshot{
+		Name:      cmp.Or(s.File, "screenshot.png"),
+		Scale:     scale,
+		Selectors: selectors,
+		Options: &config.Options{
+			RetryInterval: s.RetryInterval,
+			AtLeast:       s.AtLeast,
+		},
+	})
 }
 
 func RunSource(source string) expr.Evaluator {
