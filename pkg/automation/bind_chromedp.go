@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
 	"github.com/chromedp/chromedp"
@@ -28,36 +29,36 @@ func bindTask(task config.Task) chromedp.Action {
 			if err != nil {
 				return nil
 			}
-			fmt.Printf("Navigate to %s\n", v.AsString())
-			return chromedp.Navigate(v.AsString()).Do(c)
+			url := v.AsString()
+			return tasks(chromedp.Navigate(url), printf("Navigate to `%s'", url)).Do(c)
 		})
 	case *config.NavigateForward:
-		return chromedp.NavigateForward()
+		return tasks(chromedp.NavigateForward(), printf("Navigate forward"))
 	case *config.NavigateBack:
-		return chromedp.NavigateBack()
+		return tasks(chromedp.NavigateBack(), printf("Navigate back"))
 	case *config.WaitVisible:
-		return bindSelector(chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
+		return bindSelector("Wait until visible", chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
 	case *config.Click:
-		return bindSelector(chromedp.Click, t.Selector, t.Selectors, t.Options)
+		return bindSelector("Click", chromedp.Click, t.Selector, t.Selectors, t.Options)
 	case *config.DoubleClick:
-		return bindSelector(chromedp.DoubleClick, t.Selector, t.Selectors, t.Options)
+		return bindSelector("Double click", chromedp.DoubleClick, t.Selector, t.Selectors, t.Options)
 	case *config.Blur:
-		return bindSelector(chromedp.Blur, t.Selector, t.Selectors, t.Options)
+		return bindSelector("Blur", chromedp.Blur, t.Selector, t.Selectors, t.Options)
 	case *config.Clear:
-		return bindSelector(chromedp.Clear, t.Selector, t.Selectors, t.Options)
+		return bindSelector("Clear", chromedp.Clear, t.Selector, t.Selectors, t.Options)
 	case *config.Sleep:
-		return chromedp.Sleep(t.Duration)
+		return tasks(chromedp.Sleep(t.Duration), printf("Sleep %v", t.Duration))
 	case *config.Reload:
-		return chromedp.Reload()
+		return tasks(chromedp.Reload(), printf("Reload"))
 	case *config.Stop:
-		return chromedp.Stop()
+		return tasks(chromedp.Stop(), printf("Stop"))
 	case *config.Screenshot:
 		filename := cmp.Or(t.Name, "screenshot.png")
 		if t.Selector == "" && len(t.Selectors) == 0 {
-			return requestOutputFile(filename, chromedp.CaptureScreenshot)
+			return tasks(requestOutputFile(filename, chromedp.CaptureScreenshot), printf("Capture screenshot"))
 		}
 
-		return bindSelector(func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
+		return bindSelector("Capture screenshot", func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
 			curry := func(file *[]byte) chromedp.Action {
 				return chromedp.Screenshot(sel, file, opts...)
 			}
@@ -73,8 +74,7 @@ func bindTask(task config.Task) chromedp.Action {
 	case *config.Eval:
 		return usingVariable(t.Name, func(msg *json.RawMessage) chromedp.Action {
 			return chromedp.ActionFunc(func(c context.Context) error {
-				err := chromedp.Evaluate(t.Script, msg).Do(c)
-				fmt.Printf("Evaluate %s\n", t.Name)
+				err := tasks(chromedp.Evaluate(t.Script, msg), printf("Evaluate script `%s'", t.Name)).Do(c)
 				evalContextFrom(c).Variables[t.Name] = umarshalData(*msg)
 				return err
 			})
@@ -83,7 +83,7 @@ func bindTask(task config.Task) chromedp.Action {
 	case *config.Title:
 		return usingStringVariable(t.Name, func(str *string) chromedp.Action {
 			return chromedp.ActionFunc(func(c context.Context) error {
-				err := chromedp.Title(str).Do(c)
+				err := tasks(chromedp.Title(str), printf("Extract title into variable `%s'", t.Name)).Do(c)
 				v, _ := gocty.ToCtyValue(*str, cty.String)
 				evalContextFrom(c).Variables[t.Name] = v
 				return err
@@ -103,7 +103,7 @@ func umarshalData(msg json.RawMessage) cty.Value {
 	return v
 }
 
-func bindSelector(fn produceQueryActionFunc, sel string, sels []*config.Selector, options *config.Options) chromedp.Tasks {
+func bindSelector(desc string, fn produceQueryActionFunc, sel string, sels []*config.Selector, options *config.Options) Task {
 	if sel != "" {
 		sels = append(sels, &config.Selector{
 			Target: sel,
@@ -111,7 +111,8 @@ func bindSelector(fn produceQueryActionFunc, sel string, sels []*config.Selector
 		})
 	}
 
-	tasks := make([]chromedp.Action, len(sels))
+	var tasks chromedp.Tasks = make([]chromedp.Action, len(sels))
+	selectorDesc := make([]string, len(sels))
 	for i, s := range sels {
 		opts := make([]chromedp.QueryOption, 0)
 		if s.By != "" {
@@ -123,7 +124,10 @@ func bindSelector(fn produceQueryActionFunc, sel string, sels []*config.Selector
 		opts = append(opts, bindQueryOptions(options)...)
 
 		tasks[i] = fn(s.Target, opts...)
+		selectorDesc[i] = fmt.Sprintf(
+			"%s (by=%s, on=%s, at_least=%v, retry_interval=%v)", s.Target, s.By, s.On, options.AtLeast, options.RetryInterval)
 	}
+	tasks = append(tasks, printf("%s %s", desc, strings.Join(selectorDesc, ",")))
 	return tasks
 }
 
@@ -216,4 +220,16 @@ func usingStringVariable(name string, fn usingStringVariableFunc) chromedp.Actio
 
 		return err
 	})
+}
+
+func tasks(t ...Task) Tasks {
+	return Tasks(t)
+}
+
+func printf(format string, args ...any) TaskFunc {
+	return func(c context.Context) error {
+		fmt.Printf(format, args...)
+		fmt.Println()
+		return nil
+	}
 }
