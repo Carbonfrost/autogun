@@ -151,6 +151,10 @@ var _ = Describe("LoadConfigFile", func() {
 						"Duration": Equal(0 * time.Second),
 					}))),
 			})),
+
+			Entry("version", "version.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"1": BeAssignableToTypeOf(&config.Version{}),
+			})),
 		)
 	})
 })

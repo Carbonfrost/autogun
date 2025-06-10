@@ -129,6 +129,11 @@ func Exprs() []*expr.Expr {
 			HelpText: "store the title of the current page",
 			Evaluate: Title("title"),
 		},
+		{
+			Name:     "version", // -version
+			HelpText: "print out version information",
+			Evaluate: Version(),
+		},
 	}
 }
 
@@ -204,6 +209,10 @@ func Stop() expr.Evaluator {
 
 func Title(name string) expr.Evaluator {
 	return wrapDeferredTaskAsEvaluator(&config.Title{Name: name})
+}
+
+func Version() expr.Evaluator {
+	return wrapDeferredTaskAsEvaluator(&config.Version{})
 }
 
 func ensurePrinter(e *expr.Expression) *expr.Expression {

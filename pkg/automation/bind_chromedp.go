@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
+	"github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/chromedp"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -90,8 +91,23 @@ func bindTask(task config.Task) chromedp.Action {
 			})
 		})
 
+	case *config.Version:
+		return printBrowserVersion(browser.GetVersion())
+
 	default:
 		panic(fmt.Errorf("unexpected task type %T", t))
+	}
+}
+
+func printBrowserVersion(params *browser.GetVersionParams) TaskFunc {
+	return func(ctx context.Context) error {
+		protocolVersion, product, revision, userAgent, jsVersion, err := params.Do(ctx)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Browser versions: %s/%s, %s, protocol=%s, js=%s\n",
+			product, revision, userAgent, protocolVersion, jsVersion)
+		return nil
 	}
 }
 
