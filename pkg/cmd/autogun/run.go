@@ -21,6 +21,13 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
 
+var urlPrefix = []string{
+	"http://",
+	"https://",
+	"about:",
+	"chrome:",
+}
+
 func RunAutomation(c *cli.Context) error {
 	// Build a single automation given the source identified in the context,
 	// which are loaded as files (or navigation URLs). The expression evaluation
@@ -118,7 +125,12 @@ func flow(name string) automation.Task {
 }
 
 func looksLikeURL(addr string) bool {
-	return strings.HasPrefix(addr, "http://") || strings.HasPrefix(addr, "https://")
+	for _, prefix := range urlPrefix {
+		if strings.HasPrefix(addr, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 func loadOne(w *workspace.Workspace, path string) (*automation.Automation, error) {
