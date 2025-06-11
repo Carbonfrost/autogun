@@ -35,6 +35,10 @@ func NewApp() *cli.App {
 			color.Options{},
 			SetupWorkspace(),
 			versionInfoSupport(),
+
+			// TODO It would be better to only run this implicitly when it looks
+			// like a URL is being invoked
+			cli.ImplicitCommand("run"),
 		),
 		Flags: []*cli.Flag{
 			{
