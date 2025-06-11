@@ -32,6 +32,17 @@ autogun run https://github.com/Carbonfrost/autogun -title
 
 Check out [our docs][] for more guidance on how to use Autogun.
 
+## Getting Started
+
+### Examples
+
+* Capture a screenshot of a website, emulating iPhone 7 in landscape orientation
+
+  ```sh
+  autogun run --device=iPhone7landscape https://www.whatsmyua.info -screenshot file=iphone7-landscape-screenshot.png
+  ```
+
+
 ### Development
 
 1. Download and install [Go 1.24+](https://go.dev)
