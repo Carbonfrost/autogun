@@ -6,8 +6,8 @@ toolchain go1.24.0
 
 require (
 	github.com/Carbonfrost/joe-cli v0.9.1
-	github.com/chromedp/cdproto v0.0.0-20250530212709-4dcc110a7b92
-	github.com/chromedp/chromedp v0.13.6
+	github.com/chromedp/cdproto v0.0.0-20250724212937-08a3db8b4327
+	github.com/chromedp/chromedp v0.14.1
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
@@ -26,7 +26,7 @@ require (
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/go-critic/go-critic v0.12.0 // indirect
-	github.com/go-json-experiment/json v0.0.0-20250517221953-25912455fbc8 // indirect
+	github.com/go-json-experiment/json v0.0.0-20250725192818-e39067aee2d2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-toolsmith/astcast v1.1.0 // indirect
@@ -67,12 +67,11 @@ require (
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sync v0.15.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
-
 )
 
 tool (
