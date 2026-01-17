@@ -45,7 +45,7 @@ Check out [our docs][] for more guidance on how to use Autogun.
 
 ### Development
 
-1. Download and install [Go 1.24+](https://go.dev)
+1. Download and install [Go 1.25+](https://go.dev)
 2. Run `go build ./...`
 3. Run the tests using `go test ./...`
 
