@@ -1,0 +1,5 @@
+automation "blur!invalid" {
+  navigate {
+    url = "https://example.com"
+  }
+}

@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	identifierPattern = regexp.MustCompile("(?i)[_a-z][a-z0-9_-]*")
+	identifierPattern = regexp.MustCompile("(?i)^[_a-z][a-z0-9_-]*$")
 )
 
 func NewParser(fs fs.FS) *Parser {

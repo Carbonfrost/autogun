@@ -19,6 +19,7 @@ import (
 var _ = Describe("LoadConfigFile", func() {
 
 	Describe("parse Task", func() {
+
 		DescribeTable("examples",
 			func(hclFile string, expected types.GomegaMatcher) {
 				res, err := validExample(hclFile)
@@ -129,7 +130,7 @@ var _ = Describe("LoadConfigFile", func() {
 				"1": And(
 					BeAssignableToTypeOf(&config.Screenshot{}),
 					PointTo(MatchFields(IgnoreExtras, Fields{
-						"Name":     Equal("label.png"),
+						"Name":     Equal("label_png"),
 						"Selector": Equal("#aubergine"),
 					}))),
 				"2": And(
@@ -157,12 +158,37 @@ var _ = Describe("LoadConfigFile", func() {
 			})),
 		)
 	})
+
+	DescribeTable("error examples",
+		func(hclFile string, expected types.GomegaMatcher) {
+			_, diags := errExample(hclFile)
+			Expect(diags).To(expected)
+		},
+
+		Entry("bad-ident", "bad-ident.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+			"0": PointTo(MatchFields(IgnoreExtras, Fields{
+				"Summary": ContainSubstring(`Invalid identifier name "blur!invalid"`),
+			})),
+		})),
+	)
 })
 
 func validExample(hclFile string) (*config.File, error) {
 	appFS := afero.NewMemMapFs()
 	appFS.MkdirAll(".weyoun/", 0755)
 	data, err := os.ReadFile("testdata/valid-examples/" + hclFile)
+	Expect(err).NotTo(HaveOccurred())
+
+	afero.WriteFile(appFS, ".weyoun/site.hcl", data, 0644)
+
+	p := config.NewParser(afero.NewIOFS(appFS))
+	return p.LoadConfigFile(".weyoun/site.hcl")
+}
+
+func errExample(hclFile string) (*config.File, error) {
+	appFS := afero.NewMemMapFs()
+	appFS.MkdirAll(".weyoun/", 0755)
+	data, err := os.ReadFile("testdata/err-examples/" + hclFile)
 	Expect(err).NotTo(HaveOccurred())
 
 	afero.WriteFile(appFS, ".weyoun/site.hcl", data, 0644)

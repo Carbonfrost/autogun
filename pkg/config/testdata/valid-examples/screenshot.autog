@@ -3,11 +3,11 @@ automation "screenshot" {
     url = "https://example.com"
   }
 
-  screenshot "label.png" {
+  screenshot "label_png" {
     selector = "#aubergine"
   }
 
-  screenshot "label2.png" {
+  screenshot "label2_png" {
     selector = "#aubergine"
     scale    = 0.50
   }

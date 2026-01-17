@@ -37,11 +37,11 @@ func supportsOptionalLabel(name *string, nameRange *hcl.Range) mapper {
 	return func(block *hcl.Block) hcl.Diagnostics {
 		label := tryLabel(block, 0)
 		*name = label
-		if !validIdentifier(label) {
+		if label != "" && !validIdentifier(label) {
 			return hcl.Diagnostics{
 				{
 					Severity: hcl.DiagError,
-					Summary:  "Invalid identifier name",
+					Summary:  fmt.Sprintf("Invalid identifier name %q", label),
 					Detail:   badIdentifierDetail,
 				},
 			}
