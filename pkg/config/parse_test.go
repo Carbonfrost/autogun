@@ -153,7 +153,7 @@ var _ = Describe("LoadConfigFile", func() {
 			})),
 
 			Entry("version", "version.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
-				"1": BeAssignableToTypeOf(&config.Version{}),
+				"0": BeAssignableToTypeOf(&config.Version{}),
 			})),
 		)
 	})

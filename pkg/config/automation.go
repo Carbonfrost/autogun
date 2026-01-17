@@ -63,6 +63,9 @@ var (
 			{
 				Type: "stop",
 			},
+			{
+				Type: "version",
+			},
 		},
 	}
 
@@ -81,6 +84,7 @@ var (
 		"stop":             taskMapping(decodeStopBlock),
 		"title":            taskMapping(decodeTitleBlock),
 		"wait_visible":     taskMapping(decodeWaitVisibleBlock),
+		"version":          taskMapping(decodeVersionBlock),
 	}
 )
 
