@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package config
 
 import (
@@ -8,8 +9,16 @@ import (
 )
 
 type File struct {
-	Filename    string
 	Automations []*Automation
+	filename    string
+}
+
+func (f *File) Name() string {
+      return f.filename
+}
+
+func (f *File) SetName(s string) {
+      f.filename = s
 }
 
 var (
@@ -27,7 +36,7 @@ var (
 func decodeFile(filename string, body hcl.Body) (*File, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	f := &File{
-		Filename: filename,
+		filename: filename,
 	}
 
 	content, contentDiags := body.Content(fileSchema)
