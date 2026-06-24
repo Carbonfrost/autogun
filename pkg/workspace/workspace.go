@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package workspace
 
 import (
@@ -12,57 +13,38 @@ import (
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/config"
+	"github.com/Carbonfrost/autogun/pkg/model"
 )
 
 type Workspace struct {
 	Directory string
 	Allocator *automation.Allocator
 
-	stateCache *workspaceState
+	model   *model.Model
+	loadErr error
 }
 
-type workspaceState struct {
-	Automations     []*automation.Automation
-	didImplicitLoad bool
-}
-
-func (w *Workspace) Load(files ...string) error {
-	err := w.load()
+// Load scans the workspace for configuration files and builds a Model from
+// the automations they declare.
+func (w *Workspace) Load() (*model.Model, error) {
+	files, err := w.loadFiles()
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	root := os.DirFS(w.Directory)
-	p := config.NewParser(root)
-	res := []*config.File{}
-
-	for _, path := range files {
-		file, diag := p.LoadConfigFile(path)
-		if diag.HasErrors() {
-			return diag
-		}
-		res = append(res, file)
-	}
-	w.state().appendFiles(res)
-	return nil
+	return model.New(files...), nil
 }
 
-func (w *Workspace) Automations() []*automation.Automation {
-	err := w.load()
-	if err != nil {
-		logError(err)
+// Model obtains the model for the workspace. This method implicitly
+// loads the workspace and panics when the workspace cannot be loaded.
+// Investigate [Workspace.Load] to load while handling load errors
+func (w *Workspace) Model() *model.Model {
+	if w.model == nil && w.loadErr == nil {
+		w.model, w.loadErr = w.Load()
 	}
-	return w.state().Automations
-}
-
-// Automation retrieves the automation by name
-func (w *Workspace) Automation(name string) *automation.Automation {
-	for _, auto := range w.Automations() {
-		if auto.Name == name {
-			return auto
-		}
+	if w.loadErr != nil {
+		panic(w.loadErr)
 	}
-	return nil
+	return w.model
 }
 
 // Dir gets the workspace directory, normalized
@@ -83,16 +65,7 @@ func (w *Workspace) actualDirectory() string {
 	return w.Directory
 }
 
-func (w *Workspace) load() error {
-	return w.loadFilesFromWS()
-}
-
-func (w *Workspace) loadFilesFromWS() error {
-	if w.state().didImplicitLoad {
-		return nil
-	}
-	w.state().didImplicitLoad = true
-
+func (w *Workspace) loadFiles() ([]*config.File, error) {
 	root := os.DirFS(w.AutogunDir())
 	p := config.NewParser(root)
 	files := []*config.File{}
@@ -119,18 +92,10 @@ func (w *Workspace) loadFilesFromWS() error {
 		return nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	w.state().appendFiles(files)
-	return nil
-}
-
-func (w *Workspace) state() *workspaceState {
-	if w.stateCache == nil {
-		w.stateCache = new(workspaceState)
-	}
-	return w.stateCache
+	return files, nil
 }
 
 // TODO This should not be API
@@ -139,18 +104,6 @@ func (w *Workspace) EnsureAllocator() *automation.Allocator {
 		w.Allocator = &automation.Allocator{}
 	}
 	return w.Allocator
-}
-
-func (s *workspaceState) appendFiles(files []*config.File) {
-	for _, file := range files {
-		for _, auto := range file.Automations {
-			a, err := automation.Bind(auto, automation.UsingChromedp)
-			if err != nil {
-				logError(err)
-			}
-			s.Automations = append(s.Automations, a)
-		}
-	}
 }
 
 func logError(err error) {
