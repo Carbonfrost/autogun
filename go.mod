@@ -8,7 +8,7 @@ require (
 	github.com/chromedp/chromedp v0.14.2
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/onsi/ginkgo/v2 v2.32.0
-	github.com/onsi/gomega v1.42.0
+	github.com/onsi/gomega v1.42.1
 	github.com/spf13/afero v1.15.0
 	github.com/zclconf/go-cty v1.17.0
 	golang.org/x/term v0.44.0
@@ -64,7 +64,7 @@ require (
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
-	golang.org/x/tools v0.46.0 // indirect
+	golang.org/x/tools v0.47.0 // indirect
 	honnef.co/go/tools v0.7.0 // indirect
 )
 
