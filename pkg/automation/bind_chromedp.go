@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Carbonfrost/autogun/pkg/config"
+	"github.com/Carbonfrost/autogun/pkg/model"
 	"github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/chromedp"
 	"github.com/zclconf/go-cty/cty"
@@ -22,9 +22,9 @@ type produceFileUserActionFunc = func(*[]byte) chromedp.Action
 type usingVariableFunc = func(msg *json.RawMessage) chromedp.Action
 type usingStringVariableFunc = func(txt *string) chromedp.Action
 
-func bindTask(task config.Task) chromedp.Action {
+func bindTask(task model.Task) chromedp.Action {
 	switch t := task.(type) {
-	case *config.Navigate:
+	case *model.Navigate:
 		return chromedp.ActionFunc(func(c context.Context) error {
 			v, err := evalContext(c, t.URL)
 			if err != nil {
@@ -33,29 +33,29 @@ func bindTask(task config.Task) chromedp.Action {
 			url := v.AsString()
 			return tasks(chromedp.Navigate(url), printf("Navigate to `%s'", url)).Do(c)
 		})
-	case *config.NavigateForward:
+	case *model.NavigateForward:
 		return tasks(chromedp.NavigateForward(), printf("Navigate forward"))
-	case *config.NavigateBack:
+	case *model.NavigateBack:
 		return tasks(chromedp.NavigateBack(), printf("Navigate back"))
-	case *config.WaitVisible:
-		return bindSelector("Wait until visible", chromedp.WaitVisible, t.Selector, t.Selectors, t.Options)
-	case *config.Click:
-		return bindSelector("Click", chromedp.Click, t.Selector, t.Selectors, t.Options)
-	case *config.DoubleClick:
-		return bindSelector("Double click", chromedp.DoubleClick, t.Selector, t.Selectors, t.Options)
-	case *config.Blur:
-		return bindSelector("Blur", chromedp.Blur, t.Selector, t.Selectors, t.Options)
-	case *config.Clear:
-		return bindSelector("Clear", chromedp.Clear, t.Selector, t.Selectors, t.Options)
-	case *config.Sleep:
+	case *model.WaitVisible:
+		return bindSelector("Wait until visible", chromedp.WaitVisible, t.Selectors, t.Options)
+	case *model.Click:
+		return bindSelector("Click", chromedp.Click, t.Selectors, t.Options)
+	case *model.DoubleClick:
+		return bindSelector("Double click", chromedp.DoubleClick, t.Selectors, t.Options)
+	case *model.Blur:
+		return bindSelector("Blur", chromedp.Blur, t.Selectors, t.Options)
+	case *model.Clear:
+		return bindSelector("Clear", chromedp.Clear, t.Selectors, t.Options)
+	case *model.Sleep:
 		return tasks(chromedp.Sleep(t.Duration), printf("Sleep %v", t.Duration))
-	case *config.Reload:
+	case *model.Reload:
 		return tasks(chromedp.Reload(), printf("Reload"))
-	case *config.Stop:
+	case *model.Stop:
 		return tasks(chromedp.Stop(), printf("Stop"))
-	case *config.Screenshot:
+	case *model.Screenshot:
 		filename := cmp.Or(t.Name, "screenshot.png")
-		if t.Selector == "" && len(t.Selectors) == 0 {
+		if len(t.Selectors) == 0 {
 			return tasks(requestOutputFile(filename, chromedp.CaptureScreenshot), printf("Capture screenshot"))
 		}
 
@@ -70,9 +70,9 @@ func bindTask(task config.Task) chromedp.Action {
 			}
 
 			return requestOutputFile(filename, curry)
-		}, t.Selector, t.Selectors, t.Options)
+		}, t.Selectors, t.Options)
 
-	case *config.Eval:
+	case *model.Eval:
 		return usingVariable(t.Name, func(msg *json.RawMessage) chromedp.Action {
 			return chromedp.ActionFunc(func(c context.Context) error {
 				err := tasks(chromedp.Evaluate(t.Script, msg), printf("Evaluate script `%s'", t.Name)).Do(c)
@@ -81,7 +81,7 @@ func bindTask(task config.Task) chromedp.Action {
 			})
 		})
 
-	case *config.Title:
+	case *model.Title:
 		return usingStringVariable(t.Name, func(str *string) chromedp.Action {
 			return chromedp.ActionFunc(func(c context.Context) error {
 				err := tasks(chromedp.Title(str), printf("Extract title into variable `%s'", t.Name)).Do(c)
@@ -91,7 +91,7 @@ func bindTask(task config.Task) chromedp.Action {
 			})
 		})
 
-	case *config.Version:
+	case *model.Version:
 		return printBrowserVersion(browser.GetVersion())
 
 	default:
@@ -119,14 +119,7 @@ func umarshalData(msg json.RawMessage) cty.Value {
 	return v
 }
 
-func bindSelector(desc string, fn produceQueryActionFunc, sel string, sels []*config.Selector, options *config.Options) Task {
-	if sel != "" {
-		sels = append(sels, &config.Selector{
-			Target: sel,
-			By:     config.BySearch,
-		})
-	}
-
+func bindSelector(desc string, fn produceQueryActionFunc, sels []*model.Selector, options *model.Options) Task {
 	var tasks chromedp.Tasks = make([]chromedp.Action, len(sels))
 	selectorDesc := make([]string, len(sels))
 	for i, s := range sels {
@@ -147,41 +140,41 @@ func bindSelector(desc string, fn produceQueryActionFunc, sel string, sels []*co
 	return tasks
 }
 
-func bindSelectorBy(s config.SelectorBy) chromedp.QueryOption {
+func bindSelectorBy(s model.SelectorBy) chromedp.QueryOption {
 	switch s {
-	case config.BySearch:
+	case model.BySearch:
 		return chromedp.BySearch
-	case config.ByJSPath:
+	case model.ByJSPath:
 		return chromedp.ByJSPath
-	case config.ByID:
+	case model.ByID:
 		return chromedp.ByID
-	case config.ByQuery:
+	case model.ByQuery:
 		return chromedp.ByQuery
-	case config.ByQueryAll:
+	case model.ByQueryAll:
 		return chromedp.ByQueryAll
 	}
 	return nil
 }
 
-func bindSelectorOn(s config.SelectorOn) chromedp.QueryOption {
+func bindSelectorOn(s model.SelectorOn) chromedp.QueryOption {
 	switch s {
-	case config.OnReady:
+	case model.OnReady:
 		return chromedp.NodeReady
-	case config.OnVisible:
+	case model.OnVisible:
 		return chromedp.NodeVisible
-	case config.OnNotVisible:
+	case model.OnNotVisible:
 		return chromedp.NodeNotVisible
-	case config.OnEnabled:
+	case model.OnEnabled:
 		return chromedp.NodeEnabled
-	case config.OnSelected:
+	case model.OnSelected:
 		return chromedp.NodeSelected
-	case config.OnNotPresent:
+	case model.OnNotPresent:
 		return chromedp.NodeNotPresent
 	}
 	return nil
 }
 
-func bindQueryOptions(opts *config.Options) (results []chromedp.QueryOption) {
+func bindQueryOptions(opts *model.Options) (results []chromedp.QueryOption) {
 	if opts == nil {
 		return
 	}
@@ -194,7 +187,7 @@ func bindQueryOptions(opts *config.Options) (results []chromedp.QueryOption) {
 	return
 }
 
-func bindAutomation(automation *config.Automation) []Task {
+func bindAutomation(automation *model.Automation) []Task {
 	actions := make([]Task, 0)
 	for _, t := range automation.Tasks {
 		actions = append(actions, bindTask(t))

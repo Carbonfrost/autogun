@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package autogun
 
 import (
@@ -9,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
-	"github.com/Carbonfrost/autogun/pkg/config"
+	"github.com/Carbonfrost/autogun/pkg/model"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
@@ -17,13 +18,13 @@ import (
 )
 
 type ScreenshotArgs struct {
-	File          string            `mapstructure:"file"`
-	Scale         *float64          `mapstructure:"scale"`
-	Selector      string            `mapstructure:"selector"`
-	By            config.SelectorBy `mapstructure:"by"`
-	On            config.SelectorOn `mapstructure:"on"`
-	RetryInterval *time.Duration    `mapstructure:"retry_interval"`
-	AtLeast       *int              `mapstructure:"at_least"`
+	File          string           `mapstructure:"file"`
+	Scale         *float64         `mapstructure:"scale"`
+	Selector      string           `mapstructure:"selector"`
+	By            model.SelectorBy `mapstructure:"by"`
+	On            model.SelectorOn `mapstructure:"on"`
+	RetryInterval *time.Duration   `mapstructure:"retry_interval"`
+	AtLeast       *int             `mapstructure:"at_least"`
 }
 
 func Exprs() []*expr.Expr {
@@ -144,9 +145,9 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 	}
 
 	// TODO This selector logic is likely temporary until a selector expression is finalized
-	var selectors []*config.Selector
+	var selectors []*model.Selector
 	if s.Selector != "" {
-		selectors = []*config.Selector{
+		selectors = []*model.Selector{
 			{
 				Target: s.Selector,
 				By:     s.By,
@@ -155,11 +156,11 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 		}
 	}
 
-	return wrapDeferredTaskAsEvaluator(&config.Screenshot{
+	return wrapDeferredTaskAsEvaluator(&model.Screenshot{
 		Name:      cmp.Or(s.File, "screenshot.png"),
 		Scale:     scale,
 		Selectors: selectors,
-		Options: &config.Options{
+		Options: &model.Options{
 			RetryInterval: s.RetryInterval,
 			AtLeast:       s.AtLeast,
 		},
@@ -181,38 +182,38 @@ func Flow(name string) expr.Evaluator {
 }
 
 func Eval(script string) expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.Eval{
+	return wrapDeferredTaskAsEvaluator(&model.Eval{
 		Script: script,
 		Name:   "_1",
 	})
 }
 
 func NavigateForward() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.NavigateForward{})
+	return wrapDeferredTaskAsEvaluator(&model.NavigateForward{})
 }
 
 func NavigateBack() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.NavigateBack{})
+	return wrapDeferredTaskAsEvaluator(&model.NavigateBack{})
 }
 
 func Sleep(d time.Duration) expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.Sleep{Duration: d})
+	return wrapDeferredTaskAsEvaluator(&model.Sleep{Duration: d})
 }
 
 func Reload() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.Reload{})
+	return wrapDeferredTaskAsEvaluator(&model.Reload{})
 }
 
 func Stop() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.Stop{})
+	return wrapDeferredTaskAsEvaluator(&model.Stop{})
 }
 
 func Title(name string) expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.Title{Name: name})
+	return wrapDeferredTaskAsEvaluator(&model.Title{Name: name})
 }
 
 func Version() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&config.Version{})
+	return wrapDeferredTaskAsEvaluator(&model.Version{})
 }
 
 func ensurePrinter(e *expr.Expression) *expr.Expression {
@@ -220,7 +221,7 @@ func ensurePrinter(e *expr.Expression) *expr.Expression {
 	return e
 }
 
-func wrapDeferredTaskAsEvaluator(act config.Task) expr.EvaluatorFunc {
+func wrapDeferredTaskAsEvaluator(act model.Task) expr.EvaluatorFunc {
 	return func(_ *cli.Context, v any, yield func(any) error) error {
 		a := v.(*automation.Automation)
 		task, err := deferredTask(act)
@@ -243,7 +244,7 @@ func appendTask(a *automation.Automation, t automation.Task) {
 	a.Tasks = append(a.Tasks, t)
 }
 
-func deferredTask(act config.Task) (automation.Task, error) {
+func deferredTask(act model.Task) (automation.Task, error) {
 	// TODO Should obtain the appropriate binder
 	return automation.UsingChromedp.BindTask(act)
 }

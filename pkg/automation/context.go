@@ -6,6 +6,7 @@ package automation
 import (
 	"context"
 
+	"github.com/Carbonfrost/autogun/pkg/model"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -17,10 +18,15 @@ const (
 	automationResultKey contextKey = "automationResult"
 )
 
-func evalContext(c context.Context, expr hcl.Expression) (cty.Value, error) {
+func evalContext(c context.Context, expr model.Expression) (cty.Value, error) {
+	if expr == nil {
+		return cty.NilVal, nil
+	}
 	ec := evalContextFrom(c)
-	v, _ := expr.Value(ec)
-	return v, nil
+	return expr.Value(&model.Scope{
+		Variables: ec.Variables,
+		Functions: ec.Functions,
+	})
 }
 
 func evalContextFrom(c context.Context) *hcl.EvalContext {

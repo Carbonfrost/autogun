@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package autogun
 
 import (
@@ -14,6 +15,7 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/config"
 	"github.com/Carbonfrost/autogun/pkg/contextual"
+	"github.com/Carbonfrost/autogun/pkg/model"
 	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
@@ -86,8 +88,8 @@ func convertSources(c *cli.Context) (*automation.Automation, error) {
 
 func navigate(u string) (automation.Task, error) {
 	urlExp, _ := parseHCL(u)
-	return deferredTask(&config.Navigate{
-		URL: urlExp,
+	return deferredTask(&model.Navigate{
+		URL: model.ExpressionFromHCL(urlExp),
 	})
 }
 
@@ -120,7 +122,12 @@ func flow(name string) automation.Task {
 		if a == nil {
 			return fmt.Errorf("automation not found %q", name)
 		}
-		return a.Do(c)
+
+		auto, err := automation.Bind(a, automation.UsingChromedp)
+		if err != nil {
+			return err
+		}
+		return auto.Do(c)
 	})
 }
 
@@ -141,5 +148,5 @@ func loadOne(w *workspace.Workspace, path string) (*automation.Automation, error
 		return nil, diag
 	}
 
-	return automation.Bind(file.Automations[0], automation.UsingChromedp)
+	return automation.Bind(model.FromConfig(file.Automations[0]), automation.UsingChromedp)
 }

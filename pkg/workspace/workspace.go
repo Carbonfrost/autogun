@@ -24,6 +24,22 @@ type Workspace struct {
 	loadErr error
 }
 
+// // Model is the collection of automations available in the workspace, bound and
+// // ready to execute.
+// type Model struct {
+// 	Automations []*automation.Automation
+// }
+
+// // Automation retrieves the automation by name
+// func (m *Model) Automation(name string) *automation.Automation {
+// 	for _, auto := range m.Automations {
+// 		if auto.Name == name {
+// 			return auto
+// 		}
+// 	}
+// 	return nil
+// }
+
 // Load scans the workspace for configuration files and builds a Model from
 // the automations they declare.
 func (w *Workspace) Load() (*model.Model, error) {
@@ -31,7 +47,9 @@ func (w *Workspace) Load() (*model.Model, error) {
 	if err != nil {
 		return nil, err
 	}
-	return model.New(files...), nil
+
+	m := model.New(files...)
+	return m, nil
 }
 
 // Model obtains the model for the workspace. This method implicitly

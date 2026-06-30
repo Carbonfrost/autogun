@@ -1,20 +1,21 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package automation
 
 import (
 	"errors"
 
-	"github.com/Carbonfrost/autogun/pkg/config"
+	"github.com/Carbonfrost/autogun/pkg/model"
 )
 
 // Option provides an option to the automation builder
 type Option func(*Automation)
 
 type Binder interface { // Engine
-	BindAutomation(*config.Automation) (*Automation, error)
-	BindTask(config.Task) (Task, error)
+	BindAutomation(*model.Automation) (*Automation, error)
+	BindTask(model.Task) (Task, error)
 }
 
 // SupportedBinder is one of the supported binders
@@ -28,12 +29,12 @@ const (
 
 var errNotSupportedBinder = errors.New("unsupported binder")
 
-// Bind converts the configuration into an automation
-func Bind(cfg *config.Automation, using Binder, opts ...Option) (*Automation, error) {
+// Bind converts the model into an automation
+func Bind(m *model.Automation, using Binder, opts ...Option) (*Automation, error) {
 	if using == nil {
 		using = UsingChromedp
 	}
-	auto, err := using.BindAutomation(cfg)
+	auto, err := using.BindAutomation(m)
 	if err != nil {
 		return nil, err
 	}
@@ -43,19 +44,19 @@ func Bind(cfg *config.Automation, using Binder, opts ...Option) (*Automation, er
 	return auto, nil
 }
 
-func (s SupportedBinder) BindAutomation(cfg *config.Automation) (*Automation, error) {
+func (s SupportedBinder) BindAutomation(m *model.Automation) (*Automation, error) {
 	switch s {
 	case UsingChromedp:
 		return &Automation{
-			Name:  cfg.Name,
-			Tasks: bindAutomation(cfg),
+			Name:  m.Name,
+			Tasks: bindAutomation(m),
 		}, nil
 	default:
 		return nil, errNotSupportedBinder
 	}
 }
 
-func (s SupportedBinder) BindTask(cfg config.Task) (Task, error) {
+func (s SupportedBinder) BindTask(cfg model.Task) (Task, error) {
 	switch s {
 	case UsingChromedp:
 		return bindTask(cfg), nil
