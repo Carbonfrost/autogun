@@ -5,6 +5,7 @@
 package workspace
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -13,10 +14,17 @@ import (
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/config"
+	"github.com/Carbonfrost/autogun/pkg/internal/contextkey"
 	"github.com/Carbonfrost/autogun/pkg/model"
+	cli "github.com/Carbonfrost/joe-cli"
+	joeconfig "github.com/Carbonfrost/joe-cli/extensions/config"
 )
 
 type Workspace struct {
+	cli.Action
+
+	*joeconfig.Workspace
+
 	Directory string
 	Allocator *automation.Allocator
 
@@ -24,21 +32,32 @@ type Workspace struct {
 	loadErr error
 }
 
-// // Model is the collection of automations available in the workspace, bound and
-// // ready to execute.
-// type Model struct {
-// 	Automations []*automation.Automation
-// }
+// New creates a new workspace
+func New() *Workspace {
+	ws := &Workspace{
+		Workspace: joeconfig.NewWorkspace(),
+	}
+	ws.Action = cli.Pipeline(
+		ws.Workspace.Action,
+		ContextValue(ws),
+	)
+	return ws
+}
 
-// // Automation retrieves the automation by name
-// func (m *Model) Automation(name string) *automation.Automation {
-// 	for _, auto := range m.Automations {
-// 		if auto.Name == name {
-// 			return auto
-// 		}
-// 	}
-// 	return nil
-// }
+// FromContext gets the Workspace from the context otherwise panics
+func FromContext(ctx context.Context) *Workspace {
+	return contextkey.Resolve(ctx, contextkey.Workspace).(*Workspace)
+}
+
+// ContextValue provides an action that sets the given value into the context.
+// The only supported type is *Workspace.
+func ContextValue(v *Workspace) cli.Action {
+	return cli.WithContextValue(contextkey.Workspace, v)
+}
+
+func (w *Workspace) Pipeline() cli.Action {
+	return w.Action
+}
 
 // Load scans the workspace for configuration files and builds a Model from
 // the automations they declare.

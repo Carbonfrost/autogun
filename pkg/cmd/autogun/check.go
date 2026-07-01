@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package autogun
 
 import (
@@ -24,16 +25,10 @@ func Check() *cli.Command {
 				Value:   new(cli.FileSet),
 				Options: cli.Merge,
 				NArg:    cli.TakeUntilNextFlag,
+				Uses:    cli.Accessory("recursive", (*cli.FileSet).RecursiveFlag, cli.HelpText("format directories recursively")),
 			},
 		},
-		Flags: []*cli.Flag{
-			{
-				Name:     "recursive",
-				Aliases:  []string{"r"},
-				HelpText: "format directories recursively",
-				Uses:     cli.BindIndirect("files", (*cli.FileSet).SetRecursive, true),
-			},
-		},
+		Flags:  []*cli.Flag{},
 		Action: checkCommand,
 	}
 }

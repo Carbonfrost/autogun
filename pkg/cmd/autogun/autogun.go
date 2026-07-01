@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package autogun
 
 import (
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/internal/build"
+	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/color"
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
@@ -33,7 +35,7 @@ func NewApp() *cli.App {
 		Uses: cli.Pipeline(
 			cli.Sorted,
 			color.Options{},
-			SetupWorkspace(),
+			workspace.New(),
 			versionInfoSupport(),
 
 			// TODO It would be better to only run this implicitly when it looks
@@ -41,12 +43,6 @@ func NewApp() *cli.App {
 			cli.ImplicitCommand("run"),
 		),
 		Flags: []*cli.Flag{
-			{
-				Name:     "chdir",
-				HelpText: "Change directory into the specified working {DIRECTORY}",
-				Value:    new(cli.File),
-				Options:  cli.WorkingDirectory | cli.NonPersistent,
-			},
 			{Uses: ListDevices()},
 		},
 		Commands: []*cli.Command{
@@ -115,6 +111,6 @@ func versionInfoSupport() cli.Action {
 		cli.Before(cli.ActionFunc(triggerExtendedVersionInfo)),
 		cli.RegisterTemplateFunc("ExtendedVersionInfo", extendVersionInfo),
 		cli.RegisterTemplate("Version", versionTemplate),
-		cli.Customize("--version", cli.AddAlias("V")),
+		cli.Customize("--version", cli.Alias("V")),
 	)
 }

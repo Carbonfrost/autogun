@@ -12,6 +12,7 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/contextual"
 	cli "github.com/Carbonfrost/joe-cli"
+	"github.com/Carbonfrost/joe-cli/extensions/bind"
 )
 
 func FlagsAndArgs() cli.Action {
@@ -81,7 +82,7 @@ func SetDeviceID(v ...string) cli.Action {
 }
 
 func withBinding[V any](binder func(*automation.Allocator, V) error, args ...V) cli.Action {
-	return cli.BindContext(allocatorFromContext, binder, args...)
+	return bind.Call2(binder, bind.FromContext(allocatorFromContext), bind.Exact(args...))
 }
 
 func allocatorFromContext(c context.Context) *automation.Allocator {

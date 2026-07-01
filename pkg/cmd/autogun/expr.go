@@ -39,7 +39,7 @@ func Exprs() []*expr.Expr {
 					NArg:  1,
 				},
 			},
-			Evaluate: bind.Evaluator(RunSource, bind.String("file")),
+			Evaluate: expr.BindEvaluator(RunSource, bind.String("file")),
 		},
 		{
 			Name:     "eval", // -eval SCRIPT
@@ -53,7 +53,7 @@ func Exprs() []*expr.Expr {
 					Options:   cli.AllowFileReference,
 				},
 			},
-			Evaluate: bind.Evaluator(Eval, bind.String("script")),
+			Evaluate: expr.BindEvaluator(Eval, bind.String("script")),
 		},
 		{
 			Name:     "navigate", // -navigate URL
@@ -65,7 +65,7 @@ func Exprs() []*expr.Expr {
 					NArg:  1,
 				},
 			},
-			Evaluate: bind.Evaluator(Navigate, bind.String("url")),
+			Evaluate: expr.BindEvaluator(Navigate, bind.String("url")),
 		},
 		{
 			Name:     "flow", // -flow NAME
@@ -77,7 +77,7 @@ func Exprs() []*expr.Expr {
 					NArg:  1,
 				},
 			},
-			Evaluate: bind.Evaluator(Flow, bind.String("name")),
+			Evaluate: expr.BindEvaluator(Flow, bind.String("name")),
 		},
 		{
 			Name:     "forward", // -forward
@@ -109,7 +109,7 @@ func Exprs() []*expr.Expr {
 					NArg:  1,
 				},
 			},
-			Evaluate: bind.Evaluator(Sleep, bind.Duration("duration")),
+			Evaluate: expr.BindEvaluator(Sleep, bind.Duration("duration")),
 		},
 		{
 			Name:     "screenshot", // -screenshot [scale=SCALE,]
@@ -123,7 +123,7 @@ func Exprs() []*expr.Expr {
 					}),
 				},
 			},
-			Evaluate: bind.Evaluator(Screenshot, bind.Value[*ScreenshotArgs]("options")),
+			Evaluate: expr.BindEvaluator(Screenshot, bind.Value[*ScreenshotArgs]("options")),
 		},
 		{
 			Name:     "title", // -title
