@@ -17,7 +17,7 @@ const (
 	Chromedp Engine = iota
 )
 
-func (e *Engine) Value() automation.SupportedBinder {
+func (e *Engine) Value() automation.SupportedProtocol {
 	switch *e {
 	case Chromedp:
 		return automation.UsingChromedp

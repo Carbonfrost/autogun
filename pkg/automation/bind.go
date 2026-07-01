@@ -13,24 +13,24 @@ import (
 // Option provides an option to the automation builder
 type Option func(*Automation)
 
-type Binder interface { // Engine
+type Protocol interface { // Engine
 	BindAutomation(*model.Automation) (*Automation, error)
 	BindTask(model.Task) (Task, error)
 }
 
-// SupportedBinder is one of the supported binders
-type SupportedBinder int
+// SupportedProtocol is one of the supported binders
+type SupportedProtocol int
 
 const (
 	// UsingChromedp is a Binder for using Chrome DevTools Protocol and headless
 	// Chrome/Chromium to run the automation
-	UsingChromedp SupportedBinder = iota
+	UsingChromedp SupportedProtocol = iota
 )
 
-var errNotSupportedBinder = errors.New("unsupported binder")
+var errNotSupportedProtocol = errors.New("unsupported binder")
 
 // Bind converts the model into an automation
-func Bind(m *model.Automation, using Binder, opts ...Option) (*Automation, error) {
+func Bind(m *model.Automation, using Protocol, opts ...Option) (*Automation, error) {
 	if using == nil {
 		using = UsingChromedp
 	}
@@ -44,7 +44,7 @@ func Bind(m *model.Automation, using Binder, opts ...Option) (*Automation, error
 	return auto, nil
 }
 
-func (s SupportedBinder) BindAutomation(m *model.Automation) (*Automation, error) {
+func (s SupportedProtocol) BindAutomation(m *model.Automation) (*Automation, error) {
 	switch s {
 	case UsingChromedp:
 		return &Automation{
@@ -52,15 +52,15 @@ func (s SupportedBinder) BindAutomation(m *model.Automation) (*Automation, error
 			Tasks: bindAutomation(m),
 		}, nil
 	default:
-		return nil, errNotSupportedBinder
+		return nil, errNotSupportedProtocol
 	}
 }
 
-func (s SupportedBinder) BindTask(cfg model.Task) (Task, error) {
+func (s SupportedProtocol) BindTask(cfg model.Task) (Task, error) {
 	switch s {
 	case UsingChromedp:
 		return bindTask(cfg), nil
 	default:
-		return nil, errNotSupportedBinder
+		return nil, errNotSupportedProtocol
 	}
 }

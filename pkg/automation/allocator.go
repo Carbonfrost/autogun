@@ -13,7 +13,7 @@ import (
 
 type Allocator struct {
 	BrowserURL string
-	Engine     SupportedBinder
+	Engine     SupportedProtocol
 	DeviceID   string
 }
 
@@ -22,7 +22,7 @@ func (a *Allocator) SetBrowserURL(s string) error {
 	return nil
 }
 
-func (a *Allocator) SetEngine(e SupportedBinder) error {
+func (a *Allocator) SetEngine(e SupportedProtocol) error {
 	a.Engine = e
 	return nil
 }
