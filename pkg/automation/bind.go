@@ -13,7 +13,9 @@ import (
 )
 
 // Option provides an option to the automation builder
-type Option func(*Automation)
+type Option interface {
+	apply(*automationBuilder)
+}
 
 type Protocol interface { // Engine
 	BindAutomation(*model.Automation) (*Automation, error)
@@ -26,31 +28,27 @@ type Protocol interface { // Engine
 type SupportedProtocol int
 
 const (
-	// UsingChromedp is a Binder for using Chrome DevTools Protocol and headless
+	// ProtocolChromedp is a Binder for using Chrome DevTools Protocol and headless
 	// Chrome/Chromium to run the automation
-	UsingChromedp SupportedProtocol = iota
+	ProtocolChromedp SupportedProtocol = iota
 )
 
 var errNotSupportedProtocol = errors.New("unsupported binder")
 
 // Bind converts the model into an automation
-func Bind(m *model.Automation, using Protocol, opts ...Option) (*Automation, error) {
-	if using == nil {
-		using = UsingChromedp
-	}
-	auto, err := using.BindAutomation(m)
-	if err != nil {
-		return nil, err
+func Bind(m *model.Automation, opts ...Option) (*Automation, error) {
+	b := &automationBuilder{
+		protocol: ProtocolChromedp,
 	}
 	for _, o := range opts {
-		o(auto)
+		o.apply(b)
 	}
-	return auto, nil
+	return b.build(m)
 }
 
 func (s SupportedProtocol) BindAutomation(m *model.Automation) (*Automation, error) {
 	switch s {
-	case UsingChromedp:
+	case ProtocolChromedp:
 		return &Automation{
 			Name:  m.Name,
 			Tasks: bindAutomation(m),
@@ -62,7 +60,7 @@ func (s SupportedProtocol) BindAutomation(m *model.Automation) (*Automation, err
 
 func (s SupportedProtocol) BindTask(cfg model.Task) (Task, error) {
 	switch s {
-	case UsingChromedp:
+	case ProtocolChromedp:
 		return bindTask(cfg), nil
 	default:
 		return nil, errNotSupportedProtocol
@@ -71,7 +69,7 @@ func (s SupportedProtocol) BindTask(cfg model.Task) (Task, error) {
 
 func (s SupportedProtocol) NewExecAllocator(parent context.Context) (context.Context, context.CancelFunc, error) {
 	switch s {
-	case UsingChromedp:
+	case ProtocolChromedp:
 		res, cancel := chromedp.NewContext(parent)
 		return res, cancel, nil
 	default:
@@ -81,7 +79,7 @@ func (s SupportedProtocol) NewExecAllocator(parent context.Context) (context.Con
 
 func (s SupportedProtocol) NewRemoteAllocator(parent context.Context, url string) (context.Context, context.CancelFunc, error) {
 	switch s {
-	case UsingChromedp:
+	case ProtocolChromedp:
 		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(parent, url)
 		res, cancelInner := chromedp.NewContext(
 			allocatorContext,
@@ -93,4 +91,28 @@ func (s SupportedProtocol) NewRemoteAllocator(parent context.Context, url string
 	default:
 		return nil, nil, errNotSupportedProtocol
 	}
+}
+
+func WithProtocol(p Protocol) Option {
+	return optionFunc(func(a *automationBuilder) {
+		a.protocol = p
+	})
+}
+
+type automationBuilder struct {
+	protocol Protocol
+}
+
+func (a *automationBuilder) build(m *model.Automation) (*Automation, error) {
+	auto, err := a.protocol.BindAutomation(m)
+	if err != nil {
+		return nil, err
+	}
+	return auto, nil
+}
+
+type optionFunc func(*automationBuilder)
+
+func (f optionFunc) apply(a *automationBuilder) {
+	f(a)
 }

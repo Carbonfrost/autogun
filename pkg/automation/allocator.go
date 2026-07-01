@@ -44,7 +44,7 @@ func (a *Allocator) newContext(parent context.Context) (context.Context, context
 	ctx := withEvalContext(parent)
 	eng := a.Engine
 	if eng == nil {
-		eng = UsingChromedp
+		eng = ProtocolChromedp
 	}
 
 	if a.BrowserURL != "" {

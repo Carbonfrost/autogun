@@ -123,7 +123,7 @@ func flow(name string) automation.Task {
 			return fmt.Errorf("automation not found %q", name)
 		}
 
-		auto, err := automation.Bind(a, automation.UsingChromedp)
+		auto, err := automation.Bind(a)
 		if err != nil {
 			return err
 		}
@@ -148,5 +148,5 @@ func loadOne(w *workspace.Workspace, path string) (*automation.Automation, error
 		return nil, diag
 	}
 
-	return automation.Bind(model.FromConfig(file.Automations[0]), automation.UsingChromedp)
+	return automation.Bind(model.FromConfig(file.Automations[0]))
 }

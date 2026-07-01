@@ -20,7 +20,7 @@ const (
 func (e *Engine) Value() automation.SupportedProtocol {
 	switch *e {
 	case Chromedp:
-		return automation.UsingChromedp
+		return automation.ProtocolChromedp
 	}
 	return 0
 }

@@ -246,5 +246,5 @@ func appendTask(a *automation.Automation, t automation.Task) {
 
 func deferredTask(act model.Task) (automation.Task, error) {
 	// TODO Should obtain the appropriate binder
-	return automation.UsingChromedp.BindTask(act)
+	return automation.ProtocolChromedp.BindTask(act)
 }
