@@ -143,7 +143,7 @@ func looksLikeURL(addr string) bool {
 func loadOne(w *workspace.Workspace, path string) (*automation.Automation, error) {
 	root := os.DirFS(w.Directory)
 	p := config.NewParser(root)
-	file, diag := p.LoadConfigFile(path)
+	file, diag := p.LoadFile(path)
 	if diag.HasErrors() {
 		return nil, diag
 	}

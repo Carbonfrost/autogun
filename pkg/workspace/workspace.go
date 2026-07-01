@@ -100,7 +100,7 @@ func (w *Workspace) loadFiles() ([]*config.File, error) {
 			strings.HasSuffix(path, ".autog.json") ||
 			strings.HasSuffix(path, ".autogun.json") ||
 			strings.HasSuffix(path, ".hcl.json") {
-			file, diag := p.LoadConfigFile(path)
+			file, diag := p.LoadFile(path)
 			if diag.HasErrors() {
 				return diag
 			}

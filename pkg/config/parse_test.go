@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-var _ = Describe("LoadConfigFile", func() {
+var _ = Describe("LoadFile", func() {
 
 	Describe("parse Task", func() {
 
@@ -182,7 +182,7 @@ func validExample(hclFile string) (*config.File, error) {
 	afero.WriteFile(appFS, ".weyoun/site.hcl", data, 0644)
 
 	p := config.NewParser(afero.NewIOFS(appFS))
-	return p.LoadConfigFile(".weyoun/site.hcl")
+	return p.LoadFile(".weyoun/site.hcl")
 }
 
 func errExample(hclFile string) (*config.File, error) {
@@ -194,7 +194,7 @@ func errExample(hclFile string) (*config.File, error) {
 	afero.WriteFile(appFS, ".weyoun/site.hcl", data, 0644)
 
 	p := config.NewParser(afero.NewIOFS(appFS))
-	return p.LoadConfigFile(".weyoun/site.hcl")
+	return p.LoadFile(".weyoun/site.hcl")
 }
 
 func toString(v any) any {

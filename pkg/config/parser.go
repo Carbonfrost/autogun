@@ -38,7 +38,7 @@ func NewParser(fs fs.FS) *Parser {
 	}
 }
 
-func (p *Parser) LoadHCLFile(path string) (hcl.Body, hcl.Diagnostics) {
+func (p *Parser) loadHCLFile(path string) (hcl.Body, hcl.Diagnostics) {
 	src, err := fs.ReadFile(p.fs, path)
 
 	if err != nil {
@@ -70,8 +70,8 @@ func (p *Parser) LoadHCLFile(path string) (hcl.Body, hcl.Diagnostics) {
 	return file.Body, diags
 }
 
-func (p *Parser) LoadConfigFile(path string) (*File, hcl.Diagnostics) {
-	body, diags := p.LoadHCLFile(path)
+func (p *Parser) LoadFile(path string) (*File, hcl.Diagnostics) {
+	body, diags := p.loadHCLFile(path)
 	if body == nil {
 		return nil, diags
 	}
