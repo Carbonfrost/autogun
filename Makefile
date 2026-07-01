@@ -1,6 +1,7 @@
-# Copyright 2025 The Autogun Authors. All rights reserved.
+# Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
+
 -include eng/Makefile
 
 .DEFAULT_GOAL = build
@@ -26,3 +27,6 @@ install: -install-autogun
 
 -install-%: build -check-env-PREFIX -check-env-_GO_OUTPUT_DIR
 	$(Q) eng/install "${_GO_OUTPUT_DIR}/$*" $(PREFIX)/bin
+
+json_info:
+	@ go run -tags json_marshal ./cmd/autogun > docs/autogun.json_info.json
