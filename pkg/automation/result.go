@@ -21,9 +21,12 @@ type Result struct {
 
 func Execute(ctx context.Context, allocator *Allocator, a *Automation) (*Result, error) {
 	res := newResult()
-	ctx, cancel := allocator.newContext(
+	ctx, cancel, err := allocator.newContext(
 		withAutomationResult(ctx, res),
 	)
+	if err != nil {
+		return nil, err
+	}
 	defer cancel()
 
 	var emulate Task = TaskFunc(nil)

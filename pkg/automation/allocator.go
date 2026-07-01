@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package automation
 
 import (
@@ -13,7 +14,7 @@ import (
 
 type Allocator struct {
 	BrowserURL string
-	Engine     SupportedProtocol
+	Engine     Protocol
 	DeviceID   string
 }
 
@@ -22,7 +23,7 @@ func (a *Allocator) SetBrowserURL(s string) error {
 	return nil
 }
 
-func (a *Allocator) SetEngine(e SupportedProtocol) error {
+func (a *Allocator) SetEngine(e Protocol) error {
 	a.Engine = e
 	return nil
 }
@@ -39,23 +40,18 @@ func (a *Allocator) SetDeviceID(v string) error {
 	return nil
 }
 
-func (a *Allocator) newContext(parent context.Context) (context.Context, context.CancelFunc) {
+func (a *Allocator) newContext(parent context.Context) (context.Context, context.CancelFunc, error) {
 	ctx := withEvalContext(parent)
-
-	if a.BrowserURL != "" {
-		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(ctx, a.BrowserURL)
-		res, cancelInner := chromedp.NewContext(
-			allocatorContext,
-		)
-		return res, func() {
-			defer cancelAllocator()
-			defer cancelInner()
-		}
+	eng := a.Engine
+	if eng == nil {
+		eng = UsingChromedp
 	}
 
-	return chromedp.NewContext(
-		ctx,
-	)
+	if a.BrowserURL != "" {
+		return eng.NewRemoteAllocator(ctx, a.BrowserURL)
+	}
+
+	return eng.NewExecAllocator(ctx)
 }
 
 func (a *Allocator) resolveDevice() (dev chromedp.Device, ok bool) {

@@ -5,9 +5,11 @@
 package automation
 
 import (
+	"context"
 	"errors"
 
 	"github.com/Carbonfrost/autogun/pkg/model"
+	"github.com/chromedp/chromedp"
 )
 
 // Option provides an option to the automation builder
@@ -16,6 +18,8 @@ type Option func(*Automation)
 type Protocol interface { // Engine
 	BindAutomation(*model.Automation) (*Automation, error)
 	BindTask(model.Task) (Task, error)
+	NewExecAllocator(parent context.Context) (context.Context, context.CancelFunc, error)
+	NewRemoteAllocator(parent context.Context, url string) (context.Context, context.CancelFunc, error)
 }
 
 // SupportedProtocol is one of the supported binders
@@ -62,5 +66,31 @@ func (s SupportedProtocol) BindTask(cfg model.Task) (Task, error) {
 		return bindTask(cfg), nil
 	default:
 		return nil, errNotSupportedProtocol
+	}
+}
+
+func (s SupportedProtocol) NewExecAllocator(parent context.Context) (context.Context, context.CancelFunc, error) {
+	switch s {
+	case UsingChromedp:
+		res, cancel := chromedp.NewContext(parent)
+		return res, cancel, nil
+	default:
+		return nil, nil, errNotSupportedProtocol
+	}
+}
+
+func (s SupportedProtocol) NewRemoteAllocator(parent context.Context, url string) (context.Context, context.CancelFunc, error) {
+	switch s {
+	case UsingChromedp:
+		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(parent, url)
+		res, cancelInner := chromedp.NewContext(
+			allocatorContext,
+		)
+		return res, func() {
+			defer cancelAllocator()
+			defer cancelInner()
+		}, nil
+	default:
+		return nil, nil, errNotSupportedProtocol
 	}
 }

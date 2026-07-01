@@ -14,11 +14,11 @@ type File struct {
 }
 
 func (f *File) Name() string {
-      return f.filename
+	return f.filename
 }
 
 func (f *File) SetName(s string) {
-      f.filename = s
+	f.filename = s
 }
 
 var (
