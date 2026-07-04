@@ -20,8 +20,8 @@ type Option interface {
 type Protocol interface { // Engine
 	BindAutomation(*model.Automation) (*Automation, error)
 	BindTask(model.Task) (Task, error)
-	NewExecAllocator(parent context.Context) (context.Context, context.CancelFunc, error)
-	NewRemoteAllocator(parent context.Context, url string) (context.Context, context.CancelFunc, error)
+	NewExecAllocator(parent context.Context, opts *AllocatorOptions) (context.Context, context.CancelFunc, error)
+	NewRemoteAllocator(parent context.Context, url string, opts *AllocatorOptions) (context.Context, context.CancelFunc, error)
 }
 
 // SupportedProtocol is one of the supported binders
@@ -67,20 +67,41 @@ func (s SupportedProtocol) BindTask(cfg model.Task) (Task, error) {
 	}
 }
 
-func (s SupportedProtocol) NewExecAllocator(parent context.Context) (context.Context, context.CancelFunc, error) {
+func (s SupportedProtocol) NewExecAllocator(parent context.Context, opts *AllocatorOptions) (context.Context, context.CancelFunc, error) {
 	switch s {
 	case ProtocolChromedp:
-		res, cancel := chromedp.NewContext(parent)
-		return res, cancel, nil
+		if opts == nil {
+			opts = &AllocatorOptions{}
+		}
+		opts.warnRemoteOnlyForExec()
+
+		// Preserve the behavior of chromedp.NewContext, which applies
+		// DefaultExecAllocatorOptions when the parent has no allocator,
+		// then layer the caller's decomposed options on top.
+		execOpts := append(
+			append([]chromedp.ExecAllocatorOption{}, chromedp.DefaultExecAllocatorOptions[:]...),
+			opts.execOptions()...,
+		)
+		allocatorContext, cancelAllocator := chromedp.NewExecAllocator(parent, execOpts...)
+		res, cancelInner := chromedp.NewContext(allocatorContext)
+		return res, func() {
+			defer cancelAllocator()
+			defer cancelInner()
+		}, nil
 	default:
 		return nil, nil, errNotSupportedProtocol
 	}
 }
 
-func (s SupportedProtocol) NewRemoteAllocator(parent context.Context, url string) (context.Context, context.CancelFunc, error) {
+func (s SupportedProtocol) NewRemoteAllocator(parent context.Context, url string, opts *AllocatorOptions) (context.Context, context.CancelFunc, error) {
 	switch s {
 	case ProtocolChromedp:
-		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(parent, url)
+		if opts == nil {
+			opts = &AllocatorOptions{}
+		}
+		opts.warnExecOnlyForRemote()
+
+		allocatorContext, cancelAllocator := chromedp.NewRemoteAllocator(parent, url, opts.remoteOptions()...)
 		res, cancelInner := chromedp.NewContext(
 			allocatorContext,
 		)
