@@ -6,7 +6,6 @@ package autogun
 
 import (
 	"fmt"
-	"runtime/debug"
 	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/internal/build"
@@ -17,11 +16,6 @@ import (
 )
 
 const versionTemplate = "{{ .App.Name }}, version {{ .App.Version }}{{ ExtendedVersionInfo }}\n"
-
-var keyModules = map[string]bool{
-	"cdproto":  true,
-	"chromedp": true,
-}
 
 func Run(args []string) {
 	NewApp().Run(args)
@@ -71,7 +65,7 @@ func NewApp() *cli.App {
 			},
 			Check(),
 		},
-		Version: build.Version,
+		Version: build.Version.Version,
 	}
 }
 
@@ -82,22 +76,7 @@ func versionInfoSupport() cli.Action {
 			if !displayExtended {
 				return ""
 			}
-
-			// Contains an empty string so that there is a leading comma
-			res := []string{""}
-
-			if info, ok := debug.ReadBuildInfo(); ok {
-				for _, d := range info.Deps {
-					index := strings.LastIndex(d.Path, "/")
-					if index > 0 {
-						name := d.Path[index+1:]
-						if keyModules[name] {
-							res = append(res, fmt.Sprintf("%s@%s", name, d.Version))
-						}
-					}
-				}
-			}
-			return strings.Join(res, ", ")
+			return formatVersionInfo(build.Version)
 		}
 
 		triggerExtendedVersionInfo = func(c *cli.Context) error {
@@ -113,4 +92,12 @@ func versionInfoSupport() cli.Action {
 		cli.RegisterTemplate("Version", versionTemplate),
 		cli.Customize("--version", cli.Alias("V")),
 	)
+}
+
+func formatVersionInfo(vi build.VersionInfo) string {
+	res := []string{""} // allow leading space
+	for k, v := range vi.Modules {
+		res = append(res, fmt.Sprintf("%v, version %v", k, v))
+	}
+	return strings.Join(res, "\n")
 }
