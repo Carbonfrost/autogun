@@ -4,6 +4,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -20,7 +21,8 @@ type Parser struct {
 }
 
 const (
-	badIdentifierDetail = "A name must start with a letter or underscore and may contain only letters, digits, underscores, and dashes."
+	badIdentifierDetail  = "A name must start with a letter or underscore and may contain only letters, digits, underscores, and dashes."
+	badQIdentifierDetail = "A package-scoped name must have two parts that each are valid identifiers"
 )
 
 var (
@@ -93,6 +95,23 @@ func tryLabelRange(b *hcl.Block, n int) (res hcl.Range) {
 	return
 }
 
-func validIdentifier(name string) bool {
-	return len(name) == 0 || identifierPattern.MatchString(name)
+func checkQName(name string) error {
+	qname, ok := strings.CutPrefix(name, "@")
+	if ok {
+		for _, name := range strings.SplitN(qname, "/", 2) {
+			if err := checkName(name); err != nil {
+				return errors.New(badQIdentifierDetail)
+			}
+		}
+		return nil
+	}
+	return checkName(name)
+}
+
+func checkName(name string) error {
+	if len(name) == 0 || identifierPattern.MatchString(name) {
+		return nil
+	}
+
+	return errors.New(badIdentifierDetail)
 }

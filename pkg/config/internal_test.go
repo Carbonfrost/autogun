@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package config // intentional
 
 import (
@@ -12,11 +13,11 @@ import (
 var _ = Describe("validIdentifier", func() {
 	DescribeTable("examples",
 		func(name string, matcher types.GomegaMatcher) {
-			Expect(validIdentifier(name)).To(matcher)
+			Expect(checkName(name)).To(matcher)
 		},
-		Entry("nominal", "variable", BeTrue()),
-		Entry("allow empty names", "", BeTrue()),
-		Entry("valid with underscore", "_underscore", BeTrue()),
-		Entry("invalid", "1", BeFalse()),
+		Entry("nominal", "variable", Succeed()),
+		Entry("allow empty names", "", Succeed()),
+		Entry("valid with underscore", "_underscore", Succeed()),
+		Entry("invalid", "1", Not(Succeed())),
 	)
 })
