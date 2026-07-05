@@ -222,21 +222,32 @@ func ensurePrinter(e *expr.Expression) *expr.Expression {
 }
 
 func wrapDeferredTaskAsEvaluator(act model.Task) expr.EvaluatorFunc {
-	return func(_ *cli.Context, v any, yield func(any) error) error {
-		a := v.(*automation.Automation)
+	return withAutomation(func(a *automation.Automation) error {
 		task, err := deferredTask(act)
 		if err != nil {
 			return err
 		}
 		appendTask(a, task)
-		return yield(v)
-	}
+		return nil
+	})
 }
 
 func wrapTaskAsEvaluator(act automation.Task) expr.EvaluatorFunc {
+	return withAutomation(func(a *automation.Automation) error {
+		appendTask(a, act)
+		return nil
+	})
+}
+
+func withAutomation(fn func(*automation.Automation) error) expr.EvaluatorFunc {
 	return func(_ *cli.Context, v any, yield func(any) error) error {
-		appendTask(v.(*automation.Automation), act)
-		return yield(v)
+		query := v.(*AutomationQuery)
+		a := query.Automation
+		err := fn(a)
+		if err != nil {
+			return err
+		}
+		return yield(query)
 	}
 }
 

@@ -30,6 +30,10 @@ var urlPrefix = []string{
 	"chrome:",
 }
 
+type AutomationQuery struct {
+	Automation *automation.Automation
+}
+
 func RunAutomation(c *cli.Context) error {
 	// Build a single automation given the source identified in the context,
 	// which are loaded as files (or navigation URLs). The expression evaluation
@@ -40,7 +44,9 @@ func RunAutomation(c *cli.Context) error {
 	}
 
 	exp := ensurePrinter(expr.FromContext(c, "expression"))
-	err = exp.Evaluate(c, auto)
+	err = exp.Evaluate(c, &AutomationQuery{
+		Automation: auto,
+	})
 	if err != nil {
 		return err
 	}
