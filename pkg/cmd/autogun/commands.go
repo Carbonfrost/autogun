@@ -12,6 +12,7 @@ import (
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/contextual"
+	internalcli "github.com/Carbonfrost/autogun/pkg/internal/cli"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
 )
@@ -73,7 +74,7 @@ func setBrowserURLHelper(a *automation.Allocator, source string) error {
 	return a.SetBrowserURL(source)
 }
 
-func SetEngine(v ...Engine) cli.Action {
+func SetEngine(v ...internalcli.Engine) cli.Action {
 	return cli.Pipeline(
 		&cli.Prototype{
 			Name:     "engine",
@@ -241,6 +242,6 @@ func allocatorFromContext(c context.Context) *automation.Allocator {
 	return contextual.Workspace(c).EnsureAllocator()
 }
 
-func setEngine(a *automation.Allocator, e Engine) error {
+func setEngine(a *automation.Allocator, e internalcli.Engine) error {
 	return a.SetEngine(e.Value())
 }

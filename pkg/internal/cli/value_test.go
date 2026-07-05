@@ -1,10 +1,11 @@
 // Copyright 2025 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-package autogun_test
+
+package cli_test
 
 import (
-	"github.com/Carbonfrost/autogun/pkg/cmd/autogun"
+	internalcli "github.com/Carbonfrost/autogun/pkg/internal/cli"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -14,19 +15,19 @@ var _ = Describe("Engine", func() {
 	Describe("Set", func() {
 
 		DescribeTable("examples",
-			func(arg string, expected autogun.Engine) {
-				actual := new(autogun.Engine)
+			func(arg string, expected internalcli.Engine) {
+				actual := new(internalcli.Engine)
 				err := actual.Set(arg)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(*actual).To(Equal(autogun.Engine(expected)))
+				Expect(*actual).To(Equal(internalcli.Engine(expected)))
 			},
-			Entry("chromedp", "chromedp", autogun.Chromedp),
+			Entry("chromedp", "chromedp", internalcli.Chromedp),
 		)
 
 		DescribeTable("errors",
 			func(arg string, expected string) {
-				actual := new(autogun.Engine)
+				actual := new(internalcli.Engine)
 				err := actual.Set(arg)
 
 				Expect(err).To(MatchError(expected))
@@ -37,10 +38,10 @@ var _ = Describe("Engine", func() {
 
 	Describe("String", func() {
 		DescribeTable("examples",
-			func(arg autogun.Engine, expected string) {
-				Expect(autogun.Engine(arg).String()).To(Equal(expected))
+			func(arg internalcli.Engine, expected string) {
+				Expect(internalcli.Engine(arg).String()).To(Equal(expected))
 			},
-			Entry("chromedp", autogun.Chromedp, "chromedp"),
+			Entry("chromedp", internalcli.Chromedp, "chromedp"),
 		)
 	})
 })
