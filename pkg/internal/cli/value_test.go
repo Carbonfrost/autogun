@@ -1,4 +1,4 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,24 +10,24 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Engine", func() {
+var _ = Describe("Protocol", func() {
 
 	Describe("Set", func() {
 
 		DescribeTable("examples",
-			func(arg string, expected internalcli.Engine) {
-				actual := new(internalcli.Engine)
+			func(arg string, expected internalcli.Protocol) {
+				actual := new(internalcli.Protocol)
 				err := actual.Set(arg)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(*actual).To(Equal(internalcli.Engine(expected)))
+				Expect(*actual).To(Equal(internalcli.Protocol(expected)))
 			},
 			Entry("chromedp", "chromedp", internalcli.Chromedp),
 		)
 
 		DescribeTable("errors",
 			func(arg string, expected string) {
-				actual := new(internalcli.Engine)
+				actual := new(internalcli.Protocol)
 				err := actual.Set(arg)
 
 				Expect(err).To(MatchError(expected))
@@ -38,8 +38,8 @@ var _ = Describe("Engine", func() {
 
 	Describe("String", func() {
 		DescribeTable("examples",
-			func(arg internalcli.Engine, expected string) {
-				Expect(internalcli.Engine(arg).String()).To(Equal(expected))
+			func(arg internalcli.Protocol, expected string) {
+				Expect(internalcli.Protocol(arg).String()).To(Equal(expected))
 			},
 			Entry("chromedp", internalcli.Chromedp, "chromedp"),
 		)

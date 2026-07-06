@@ -21,7 +21,7 @@ func FlagsAndArgs() cli.Action {
 	return cli.Pipeline(
 		cli.AddFlags([]*cli.Flag{
 			{Uses: SetBrowserURL()},
-			{Uses: SetEngine()},
+			{Uses: SetProtocol()},
 			{Uses: SetDeviceID()},
 			{Uses: SetExecPath()},
 			{Uses: SetProxyServer()},
@@ -59,14 +59,15 @@ func setBrowserURLHelper(a *automation.Allocator, source string) error {
 	return a.SetBrowserURL(source)
 }
 
-func SetEngine(v ...internalcli.Engine) cli.Action {
+func SetProtocol(v ...automation.Protocol) cli.Action {
 	return cli.Pipeline(
 		&cli.Prototype{
-			Name:     "engine",
-			Aliases:  []string{"e"},
+			Name:     "protocol",
+			Aliases:  []string{"P"},
 			HelpText: "use the specified {ENGINE} (chromedp)",
+			Value:    new(internalcli.Protocol),
 		},
-		withBinding(setEngine, v...),
+		withBinding((*automation.Allocator).SetProtocol, v...),
 	)
 }
 
@@ -225,8 +226,4 @@ func withBinding[V any](binder func(*automation.Allocator, V) error, args ...V) 
 
 func allocatorFromContext(c context.Context) *automation.Allocator {
 	return contextual.Workspace(c).EnsureAllocator()
-}
-
-func setEngine(a *automation.Allocator, e internalcli.Engine) error {
-	return a.SetEngine(e.Value())
 }

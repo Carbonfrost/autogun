@@ -12,13 +12,13 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/automation"
 )
 
-type Engine int
+type Protocol int
 
 const (
-	Chromedp Engine = iota
+	Chromedp Protocol = iota
 )
 
-func (e *Engine) Value() automation.SupportedProtocol {
+func (e *Protocol) Value() automation.SupportedProtocol {
 	switch *e {
 	case Chromedp:
 		return automation.ProtocolChromedp
@@ -26,11 +26,11 @@ func (e *Engine) Value() automation.SupportedProtocol {
 	return 0
 }
 
-func (*Engine) Synopsis() string {
+func (*Protocol) Synopsis() string {
 	return "{chromedp}"
 }
 
-func (e *Engine) Set(arg string) error {
+func (e *Protocol) Set(arg string) error {
 	switch strings.ToLower(arg) {
 	case "chromedp":
 		*e = Chromedp
@@ -40,7 +40,7 @@ func (e *Engine) Set(arg string) error {
 	return nil
 }
 
-func (e Engine) String() string {
+func (e Protocol) String() string {
 	switch e {
 	case Chromedp:
 		return "chromedp"
@@ -49,4 +49,4 @@ func (e Engine) String() string {
 	return ""
 }
 
-var _ flag.Value = (*Engine)(nil)
+var _ flag.Value = (*Protocol)(nil)

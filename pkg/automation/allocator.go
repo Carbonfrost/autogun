@@ -17,7 +17,7 @@ import (
 
 type Allocator struct {
 	BrowserURL string
-	Engine     Protocol
+	Protocol   Protocol
 	DeviceID   string
 
 	// Options carries the union of exec/remote allocator options. Fields
@@ -31,8 +31,8 @@ func (a *Allocator) SetBrowserURL(s string) error {
 	return nil
 }
 
-func (a *Allocator) SetEngine(e Protocol) error {
-	a.Engine = e
+func (a *Allocator) SetProtocol(e Protocol) error {
+	a.Protocol = e
 	return nil
 }
 
@@ -167,7 +167,7 @@ func (a *Allocator) SetFlag(v []string) error {
 
 func (a *Allocator) newContext(parent context.Context) (context.Context, context.CancelFunc, error) {
 	ctx := withEvalContext(parent)
-	eng := a.Engine
+	eng := a.Protocol
 	if eng == nil {
 		eng = ProtocolChromedp
 	}
