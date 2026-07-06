@@ -166,6 +166,13 @@
             "options": "EXITS, NON_PERSISTENT"
         },
         {
+            "name": "verbose",
+            "aliases": [
+                "v"
+            ],
+            "helpText": "Display verbose output; can be used multiple times to increase detail"
+        },
+        {
             "name": "color",
             "helpText": "Controls whether terminal color and styles are used",
             "data": {
@@ -230,6 +237,6 @@
     ],
     "helpText": "Use Autogun to detect and execute Web browser automation",
     "version": "(devel)",
-    "buildDate": "2026-07-06T13:13:16.980627219-07:00",
+    "buildDate": "2026-07-06T13:13:33.467386431-07:00",
     "comment": "Web browser automation"
 }

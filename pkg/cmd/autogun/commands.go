@@ -1,11 +1,11 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package autogun
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -38,21 +38,6 @@ func FlagsAndArgs() cli.Action {
 			{Uses: SetNoModifyURL()},
 		}...),
 	)
-}
-
-func ListDevices() cli.Action {
-	return cli.Pipeline(
-		&cli.Prototype{
-			Name:     "list-devices",
-			HelpText: "list available devices to emulate",
-			Options:  cli.Exits | cli.NonPersistent,
-			Value:    new(bool),
-		},
-		cli.At(cli.ActionTiming, cli.ActionOf(func() {
-			for _, s := range automation.DeviceIDs() {
-				fmt.Println(s)
-			}
-		})))
 }
 
 func SetBrowserURL(v ...string) cli.Action {

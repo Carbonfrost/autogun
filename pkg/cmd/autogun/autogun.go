@@ -37,7 +37,8 @@ func NewApp() *cli.App {
 			cli.ImplicitCommand("run"),
 		),
 		Flags: []*cli.Flag{
-			{Uses: ListDevices()},
+			{Uses: workspace.ListDevices()},
+			{Uses: SetVerbose()},
 		},
 		Commands: []*cli.Command{
 			Fmt(),
@@ -67,6 +68,17 @@ func NewApp() *cli.App {
 		},
 		Version: build.Version.Version,
 	}
+}
+
+func SetVerbose(v ...bool) cli.Action {
+	return cli.Pipeline(
+		&cli.Prototype{
+			Name:     "verbose",
+			Aliases:  []string{"v"},
+			HelpText: "Display verbose output; can be used multiple times to increase detail",
+			Value:    new(bool),
+		},
+	)
 }
 
 func versionInfoSupport() cli.Action {

@@ -13,6 +13,7 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/model"
 	"github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/chromedp"
+	"github.com/chromedp/chromedp/device"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
@@ -193,6 +194,25 @@ func bindAutomation(automation *model.Automation) []Task {
 		actions = append(actions, bindTask(t))
 	}
 	return actions
+}
+
+func bindDevice(dev model.Device) chromedp.Device {
+	return deviceImpl(dev)
+}
+
+type deviceImpl model.Device
+
+func (d deviceImpl) Device() device.Info {
+	return device.Info{
+		Name:      d.Name,
+		UserAgent: d.UserAgent,
+		Width:     d.Width,
+		Height:    d.Height,
+		Scale:     d.Scale,
+		Landscape: d.Landscape,
+		Mobile:    d.Mobile,
+		Touch:     d.Touch,
+	}
 }
 
 func requestOutputFile(name string, fn produceFileUserActionFunc) chromedp.Action {

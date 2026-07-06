@@ -31,8 +31,8 @@ func Execute(ctx context.Context, allocator *Allocator, a *Automation) (*Result,
 
 	var emulate Task = TaskFunc(nil)
 	if dev, ok := allocator.resolveDevice(); ok {
-		fmt.Fprintf(os.Stderr, "Emulating device %s (%s)\n", dev.Device().Name, allocator.DeviceID)
-		emulate = chromedp.Emulate(dev)
+		fmt.Fprintf(os.Stderr, "Emulating device %s (%s)\n", dev.Name, allocator.DeviceID)
+		emulate = chromedp.Emulate(bindDevice(dev))
 	}
 
 	return res, chromedp.Run(ctx, emulate, a)

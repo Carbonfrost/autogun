@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chromedp/chromedp"
+	"github.com/Carbonfrost/autogun/pkg/model"
 )
 
 type Allocator struct {
@@ -40,9 +40,9 @@ func (a *Allocator) SetDeviceID(v string) error {
 	a.DeviceID = v
 
 	if v != "" {
-		dev, ok := a.resolveDevice()
+		_, ok := a.resolveDevice()
 		if !ok {
-			fmt.Fprintf(os.Stderr, "warning: device %q not found\n", dev)
+			fmt.Fprintf(os.Stderr, "warning: device %q not found\n", a.DeviceID)
 		}
 	}
 	return nil
@@ -179,7 +179,7 @@ func (a *Allocator) newContext(parent context.Context) (context.Context, context
 	return eng.NewExecAllocator(ctx, a.Options)
 }
 
-func (a *Allocator) resolveDevice() (dev chromedp.Device, ok bool) {
-	dev, ok = devices[a.DeviceID]
+func (a *Allocator) resolveDevice() (dev model.Device, ok bool) {
+	dev, ok = model.LookupDevice(a.DeviceID)
 	return
 }
