@@ -14,11 +14,10 @@ import (
 
 // Option provides an option to the automation builder
 type Option interface {
-	apply(*automationBuilder)
+	apply(*Driver)
 }
 
 type Protocol interface { // Engine
-	BindAutomation(*model.Automation) (*Automation, error)
 	BindTask(model.Task) (Task, error)
 	NewExecAllocator(parent context.Context, opts *AllocatorOptions) (context.Context, context.CancelFunc, error)
 	NewRemoteAllocator(parent context.Context, url string, opts *AllocatorOptions) (context.Context, context.CancelFunc, error)
@@ -35,27 +34,30 @@ const (
 
 var errNotSupportedProtocol = errors.New("unsupported binder")
 
-// Bind converts the model into an automation
-func Bind(m *model.Automation, opts ...Option) (*Automation, error) {
-	b := &automationBuilder{
-		protocol: ProtocolChromedp,
+// Bind converts the model into an automation driver
+func Bind(m *model.Model, opts ...Option) (*Driver, error) {
+	b := &Driver{
+		model:     m,
+		protocol:  ProtocolChromedp,
+		allocator: &Allocator{},
 	}
 	for _, o := range opts {
 		o.apply(b)
 	}
-	return b.build(m)
-}
+	automations := map[string]*Automation{}
 
-func (s SupportedProtocol) BindAutomation(m *model.Automation) (*Automation, error) {
-	switch s {
-	case ProtocolChromedp:
-		return &Automation{
-			Name:  m.Name,
-			Tasks: bindAutomation(m),
-		}, nil
-	default:
-		return nil, errNotSupportedProtocol
+	var err error
+
+	// TODO Don't eagerly build these automations; should be handled
+	// within Driver.flow and possibly cache
+	for _, auto := range m.Automations {
+		automations[auto.Name], err = b.buildAutomation(auto)
+		if err != nil {
+			return nil, err
+		}
 	}
+	b.automations = automations
+	return b, nil
 }
 
 func (s SupportedProtocol) BindTask(cfg model.Task) (Task, error) {
@@ -114,26 +116,20 @@ func (s SupportedProtocol) NewRemoteAllocator(parent context.Context, url string
 	}
 }
 
+func WithAllocator(v *Allocator) Option {
+	return optionFunc(func(a *Driver) {
+		a.allocator = v
+	})
+}
+
 func WithProtocol(p Protocol) Option {
-	return optionFunc(func(a *automationBuilder) {
+	return optionFunc(func(a *Driver) {
 		a.protocol = p
 	})
 }
 
-type automationBuilder struct {
-	protocol Protocol
-}
+type optionFunc func(*Driver)
 
-func (a *automationBuilder) build(m *model.Automation) (*Automation, error) {
-	auto, err := a.protocol.BindAutomation(m)
-	if err != nil {
-		return nil, err
-	}
-	return auto, nil
-}
-
-type optionFunc func(*automationBuilder)
-
-func (f optionFunc) apply(a *automationBuilder) {
+func (f optionFunc) apply(a *Driver) {
 	f(a)
 }

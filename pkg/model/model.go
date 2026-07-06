@@ -5,14 +5,10 @@
 package model
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/Carbonfrost/autogun/pkg/config"
 )
 
-// Model is the collection of automations available in the workspace, bound and
-// ready to execute.
+// Model is the collection of automations available in the workspace.
 type Model struct {
 	Automations []*Automation
 }
@@ -36,8 +32,4 @@ func (m *Model) Automation(name string) *Automation {
 		}
 	}
 	return nil
-}
-
-func logError(err error) {
-	fmt.Fprintln(os.Stderr, err)
 }

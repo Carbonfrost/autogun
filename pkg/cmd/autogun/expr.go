@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Carbonfrost/autogun/pkg/automation"
 	"github.com/Carbonfrost/autogun/pkg/model"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
@@ -156,7 +155,7 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 		}
 	}
 
-	return wrapDeferredTaskAsEvaluator(&model.Screenshot{
+	return wrapTaskAsEvaluator(&model.Screenshot{
 		Name:      cmp.Or(s.File, "screenshot.png"),
 		Scale:     scale,
 		Selectors: selectors,
@@ -168,7 +167,7 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 }
 
 func RunSource(source string) expr.Evaluator {
-	return wrapTaskAsEvaluator(runSource(source))
+	return wrapTaskAsEvaluator(&model.Source{Filename: source})
 }
 
 func Navigate(url string) expr.Evaluator {
@@ -178,42 +177,42 @@ func Navigate(url string) expr.Evaluator {
 }
 
 func Flow(name string) expr.Evaluator {
-	return wrapTaskAsEvaluator(flow(name))
+	return wrapTaskAsEvaluator(&model.Flow{Name: name})
 }
 
 func Eval(script string) expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.Eval{
+	return wrapTaskAsEvaluator(&model.Eval{
 		Script: script,
 		Name:   "_1",
 	})
 }
 
 func NavigateForward() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.NavigateForward{})
+	return wrapTaskAsEvaluator(&model.NavigateForward{})
 }
 
 func NavigateBack() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.NavigateBack{})
+	return wrapTaskAsEvaluator(&model.NavigateBack{})
 }
 
 func Sleep(d time.Duration) expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.Sleep{Duration: d})
+	return wrapTaskAsEvaluator(&model.Sleep{Duration: d})
 }
 
 func Reload() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.Reload{})
+	return wrapTaskAsEvaluator(&model.Reload{})
 }
 
 func Stop() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.Stop{})
+	return wrapTaskAsEvaluator(&model.Stop{})
 }
 
 func Title(name string) expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.Title{Name: name})
+	return wrapTaskAsEvaluator(&model.Title{Name: name})
 }
 
 func Version() expr.Evaluator {
-	return wrapDeferredTaskAsEvaluator(&model.Version{})
+	return wrapTaskAsEvaluator(&model.Version{})
 }
 
 func ensurePrinter(e *expr.Expression) *expr.Expression {
@@ -221,25 +220,14 @@ func ensurePrinter(e *expr.Expression) *expr.Expression {
 	return e
 }
 
-func wrapDeferredTaskAsEvaluator(act model.Task) expr.EvaluatorFunc {
-	return withAutomation(func(a *automation.Automation) error {
-		task, err := deferredTask(act)
-		if err != nil {
-			return err
-		}
-		appendTask(a, task)
-		return nil
-	})
-}
-
-func wrapTaskAsEvaluator(act automation.Task) expr.EvaluatorFunc {
-	return withAutomation(func(a *automation.Automation) error {
+func wrapTaskAsEvaluator(act model.Task) expr.EvaluatorFunc {
+	return withAutomation(func(a *model.Automation) error {
 		appendTask(a, act)
 		return nil
 	})
 }
 
-func withAutomation(fn func(*automation.Automation) error) expr.EvaluatorFunc {
+func withAutomation(fn func(*model.Automation) error) expr.EvaluatorFunc {
 	return func(_ *cli.Context, v any, yield func(any) error) error {
 		query := v.(*AutomationQuery)
 		a := query.Automation
@@ -251,11 +239,6 @@ func withAutomation(fn func(*automation.Automation) error) expr.EvaluatorFunc {
 	}
 }
 
-func appendTask(a *automation.Automation, t automation.Task) {
+func appendTask(a *model.Automation, t model.Task) {
 	a.Tasks = append(a.Tasks, t)
-}
-
-func deferredTask(act model.Task) (automation.Task, error) {
-	// TODO Should obtain the appropriate binder
-	return automation.ProtocolChromedp.BindTask(act)
 }

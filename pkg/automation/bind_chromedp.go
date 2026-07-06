@@ -1,6 +1,7 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package automation
 
 import (
@@ -186,14 +187,6 @@ func bindQueryOptions(opts *model.Options) (results []chromedp.QueryOption) {
 		results = append(results, chromedp.AtLeast(*opts.AtLeast))
 	}
 	return
-}
-
-func bindAutomation(automation *model.Automation) []Task {
-	actions := make([]Task, 0)
-	for _, t := range automation.Tasks {
-		actions = append(actions, bindTask(t))
-	}
-	return actions
 }
 
 func bindDevice(dev model.Device) chromedp.Device {

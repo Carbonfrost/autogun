@@ -5,7 +5,6 @@
 package autogun
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -13,10 +12,8 @@ import (
 	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
-	"github.com/Carbonfrost/autogun/pkg/config"
 	"github.com/Carbonfrost/autogun/pkg/contextual"
 	"github.com/Carbonfrost/autogun/pkg/model"
-	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
 	"github.com/hashicorp/hcl/v2"
@@ -31,7 +28,7 @@ var urlPrefix = []string{
 }
 
 type AutomationQuery struct {
-	Automation *automation.Automation
+	Automation *model.Automation
 }
 
 func RunAutomation(c *cli.Context) error {
@@ -52,7 +49,21 @@ func RunAutomation(c *cli.Context) error {
 	}
 
 	ws := contextual.Workspace(c.Context())
-	results, err := automation.Execute(c.Context(), ws.EnsureAllocator(), auto)
+	mo, err := ws.Load()
+	if err != nil {
+		return err
+	}
+
+	driver, err := automation.Bind(
+		mo,
+		automation.WithProtocol(automation.ProtocolChromedp),
+		automation.WithAllocator(ws.EnsureAllocator()),
+	)
+	if err != nil {
+		return err
+	}
+
+	results, err := driver.Execute(c, auto)
 	if err != nil {
 		return err
 	}
@@ -65,8 +76,8 @@ func RunAutomation(c *cli.Context) error {
 	return nil
 }
 
-func convertSources(c *cli.Context) (*automation.Automation, error) {
-	var result []automation.Task
+func convertSources(c *cli.Context) (*model.Automation, error) {
+	var result []model.Task
 	for _, source := range c.List("sources") {
 		switch {
 		case source == ".":
@@ -84,57 +95,23 @@ func convertSources(c *cli.Context) (*automation.Automation, error) {
 			result = append(result, nav)
 
 		default:
-			result = append(result, runSource(source))
+			result = append(result, &model.Source{Filename: source})
 		}
 	}
-	return &automation.Automation{
+	return &model.Automation{
 		Tasks: result,
 	}, nil
 }
 
-func navigate(u string) (automation.Task, error) {
+func navigate(u string) (model.Task, error) {
 	urlExp, _ := parseHCL(u)
-	return deferredTask(&model.Navigate{
+	return &model.Navigate{
 		URL: model.ExpressionFromHCL(urlExp),
-	})
+	}, nil
 }
 
 func parseHCL(u string) (hcl.Expression, error) {
 	return hclsyntax.ParseExpression([]byte(strconv.Quote(u)), "-", hcl.Pos{})
-}
-
-func runSource(source string) automation.Task {
-	return automation.TaskFunc(func(c context.Context) error {
-		// TODO Dubious to parse the file like this without the
-		// workspace loading first. Also loadOne assumes one automation
-		// per file which may not be true
-
-		// TODO Also dubious to perform this within the task (rather
-		// than fail earlier), but it is convenient for implementing the
-		// expression
-		ws := contextual.Workspace(c)
-		auto, err := loadOne(ws, source)
-
-		if err != nil {
-			return err
-		}
-		return auto.Do(c)
-	})
-}
-
-func flow(name string) automation.Task {
-	return automation.TaskFunc(func(c context.Context) error {
-		a := contextual.Workspace(c).Model().Automation(name)
-		if a == nil {
-			return fmt.Errorf("automation not found %q", name)
-		}
-
-		auto, err := automation.Bind(a)
-		if err != nil {
-			return err
-		}
-		return auto.Do(c)
-	})
 }
 
 func looksLikeURL(addr string) bool {
@@ -144,15 +121,4 @@ func looksLikeURL(addr string) bool {
 		}
 	}
 	return false
-}
-
-func loadOne(w *workspace.Workspace, path string) (*automation.Automation, error) {
-	root := os.DirFS(".")
-	p := config.NewParser(root)
-	file, diag := p.LoadFile(path)
-	if diag.HasErrors() {
-		return nil, diag
-	}
-
-	return automation.Bind(model.FromConfig(file.Automations[0]))
 }

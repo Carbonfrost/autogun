@@ -79,17 +79,27 @@ type Stop struct{}
 
 type Version struct{}
 
+type Flow struct {
+	Name string
+}
+
+type Source struct {
+	Filename string
+}
+
 func (*Blur) taskSigil()            {}
 func (*Clear) taskSigil()           {}
 func (*Click) taskSigil()           {}
 func (*DoubleClick) taskSigil()     {}
 func (*Eval) taskSigil()            {}
+func (*Flow) taskSigil()            {}
 func (*Navigate) taskSigil()        {}
 func (*NavigateBack) taskSigil()    {}
 func (*NavigateForward) taskSigil() {}
 func (*Reload) taskSigil()          {}
 func (*Screenshot) taskSigil()      {}
 func (*Sleep) taskSigil()           {}
+func (*Source) taskSigil()          {}
 func (*Stop) taskSigil()            {}
 func (*Title) taskSigil()           {}
 func (*Version) taskSigil()         {}

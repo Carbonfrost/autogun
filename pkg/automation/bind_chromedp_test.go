@@ -19,15 +19,22 @@ var _ = Describe("Bind", func() {
 		DescribeTable("examples",
 			func(task model.Task) {
 				var (
+					driver *automation.Driver
 					output *automation.Automation
 					err    error
 				)
 				bind := func() {
-					output, err = automation.Bind(&model.Automation{
-						Tasks: []model.Task{
-							task,
+					driver, err = automation.Bind(&model.Model{
+						Automations: []*model.Automation{
+							{
+								Name: "a",
+								Tasks: []model.Task{
+									task,
+								},
+							},
 						},
 					})
+					output = driver.Automation("a")
 				}
 
 				Expect(bind).NotTo(Panic())

@@ -1,41 +1,20 @@
-// Copyright 2025 The Autogun Authors. All rights reserved.
+// Copyright 2025, 2026 The Autogun Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package automation
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/chromedp/chromedp"
 )
 
 type Result struct {
 	Outputs     map[string]*json.RawMessage
 	OutputFiles map[string]*[]byte
-}
-
-func Execute(ctx context.Context, allocator *Allocator, a *Automation) (*Result, error) {
-	res := newResult()
-	ctx, cancel, err := allocator.newContext(
-		withAutomationResult(ctx, res),
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer cancel()
-
-	var emulate Task = TaskFunc(nil)
-	if dev, ok := allocator.resolveDevice(); ok {
-		fmt.Fprintf(os.Stderr, "Emulating device %s (%s)\n", dev.Name, allocator.DeviceID)
-		emulate = chromedp.Emulate(bindDevice(dev))
-	}
-
-	return res, chromedp.Run(ctx, emulate, a)
 }
 
 func newResult() *Result {

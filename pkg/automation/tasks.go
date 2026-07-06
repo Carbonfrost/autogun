@@ -28,3 +28,13 @@ func Printf(format string, args ...any) Task {
 		return nil
 	})
 }
+
+func taskThunk(factory func(context.Context) (Task, error)) Task {
+	return TaskFunc(func(c context.Context) error {
+		auto, err := factory(c)
+		if err != nil {
+			return err
+		}
+		return auto.Do(c)
+	})
+}
