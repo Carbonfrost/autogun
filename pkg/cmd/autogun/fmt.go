@@ -11,8 +11,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/Carbonfrost/autogun/pkg/config/format"
 	cli "github.com/Carbonfrost/joe-cli"
-	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
 func Fmt() *cli.Command {
@@ -99,7 +99,7 @@ func processFile(fn string, in *os.File, overwrite bool) (changed bool, err erro
 		return false, fmt.Errorf("failed to read %s: %s", fn, err)
 	}
 
-	outSrc := hclwrite.Format(inSrc)
+	outSrc := format.Source(inSrc)
 	changed = !bytes.Equal(inSrc, outSrc)
 
 	if overwrite {
