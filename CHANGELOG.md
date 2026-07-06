@@ -1,5 +1,69 @@
 # Changelog
 
+## v0.3.0 (July 6, 2026)
+
+### New Features
+
+* `Print` task (e8e1eab)
+* Expose `title` as expression (89b1e44)
+* Capture `screenshot` expression (2654ec8)
+* Add expr to evaluate script from command line (fd2deea)
+* Support package-scoped naming rules (eab0c40)
+* File name API (71c6663)
+* More URL prefixes allowed for sources treated as URLs (13a09c0)
+* Version expression and block (9ce042e)
+* Enable version command to have additional verbosity; alias (e811f74)
+* Flag `--browser`: Implicit default host and protocol handling (5960275)
+* Print out tasks as they happen (afe0fab)
+
+### Bug fixes and improvements
+
+* Bug fix: resolve dynamically loaded automations relative to working dir (27ed46e)
+* Bug fix: detect invalid identifiers in workflows (c87fa1e)
+* Typo: device flag (1117ba5)
+* Version block decoding (01ca624)
+* Implicitly execute run command (aa06732)
+* Improve tracing of invalid name errors (c4a6902)
+* `AutomationQuery` to encapsulate expression pipeline state (f4cf056)
+* `AllocatorOptions`; flags, wiring (7d95eaf)
+* Incremental refactorings:
+    * Adopt more modern patterns for sub-commands (170bdb0)
+    * Introduce `config/format` package (b1bb1c3)
+    * Rename `Engine` to `Protocol` (7463092)
+    * Relocate `Device` to `model` package (5dc6195)
+    * Relocate `Engine` to `internal/cli` (04077dd)
+    * Rename `LoadConfigFile` and unexport `LoadHCLFile` (04b5b9f)
+    * Introduce `Option` pattern for binding automations; Remove `UsingChrome` (5d7f849)
+    * Delegate to `Protocol` to support allocators (3683509)
+    * Rename `Binder` to `Protocol` (f471feb)
+    * Relocate module version info; update format (8c22937)
+    * Have `Navigate` evaluator depend upon common deferred task adapter (b3fc41f)
+    * Model layer in between config and automation (9564153)
+    * Introduce model package to handle loading; initial implementation (7707f8b)
+    * Encapsulate `Tasks` as own type (ad5abb6)
+* Documentation:
+    * Update README with logo (4142e2d)
+    * Update README (cae20f2)
+    * Licensing and copyright information (ee19aac)
+    * Add license file (9c31cc2)
+    * Update README with example (4ed8433)
+    * Adopt code of conduct (1893095)
+* Chores:
+    * Update dependent versions (f04e73f, e24a40c)
+    * Update dependent versions; GitHub configuration (20ad210)
+    * Update dependent versions and GitHub workflows (ee09b52)
+    * Upgrade dependent versions (5e38293)
+    * Update joe-cli to latest version (c12f2f7)
+    * Remove reference to deprecated package (9ebe93e)
+    * Bump actions/setup-go from 5 to 6 (f3bb1cf)
+    * Bump actions/checkout from 4 to 6 (66d9ee7)
+    * Bump goreleaser/goreleaser-action from 6 to 7 (e9e1273)
+    * Update revive configuration (3f7dd7c)
+    * Update gitignore list (07a5dc5)
+    * Update dependent versions (c72b5da)
+    * Introduce json_info documentation (4ff5d91)
+
+
 ## v0.2.0 (April 14, 2025)
 
 ### New Features
