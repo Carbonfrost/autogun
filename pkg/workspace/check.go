@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package autogun
+package workspace
 
 import (
 	"fmt"
@@ -10,30 +10,47 @@ import (
 	"strings"
 
 	cli "github.com/Carbonfrost/joe-cli"
+	"github.com/Carbonfrost/joe-cli/extensions/bind"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"golang.org/x/term"
 )
 
-func Check() *cli.Command {
-	return &cli.Command{
-		Name:     "check",
-		HelpText: "Parse files to look for syntax errors",
-		Args: []*cli.Arg{
-			{
-				Name:    "files",
-				Value:   new(cli.FileSet),
-				Options: cli.Merge,
-				NArg:    cli.TakeUntilNextFlag,
-				Uses:    cli.Accessory("recursive", (*cli.FileSet).RecursiveFlag, cli.HelpText("format directories recursively")),
-			},
-		},
-		Flags:  []*cli.Flag{},
-		Action: checkCommand,
-	}
+type CheckParams struct {
+	Files *cli.FileSet
 }
 
-func checkCommand(c *cli.Context) error {
+func Check() cli.Action {
+	return cli.Pipeline(
+		&cli.Prototype{
+			Name:     "check",
+			HelpText: "Parse files to look for syntax errors",
+		},
+		bind.Call(checkSpec, useCheckParams()),
+	)
+}
+
+func useCheckParams() bind.ActionBinder[CheckParams] {
+	return bind.NewActionBinder(
+		cli.Pipeline(
+			cli.AddArgs([]*cli.Arg{
+				{
+					Name:  "files",
+					Value: new(cli.FileSet),
+					NArg:  cli.TakeUntilNextFlag,
+					Uses:  cli.Accessory("recursive", (*cli.FileSet).RecursiveFlag, cli.HelpText("format directories recursively")),
+				},
+			}...),
+		),
+		bind.Func[CheckParams](func(c *cli.Context) (CheckParams, error) {
+			return CheckParams{
+				Files: c.FileSet("files"),
+			}, nil
+		}),
+	)
+}
+
+func checkSpec(c CheckParams) error {
 	var anyErrors bool
 	parser := hclparse.NewParser()
 	color := term.IsTerminal(int(os.Stderr.Fd()))
@@ -42,7 +59,7 @@ func checkCommand(c *cli.Context) error {
 		w = 80
 	}
 	diagWriter := hcl.NewDiagnosticTextWriter(os.Stderr, parser.Files(), uint(w), color)
-	files, err := enumerateFiles(c.FileSet("files"))
+	files, err := enumerateFiles(c.Files)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package autogun
+package workspace
 
 import (
 	"bytes"
@@ -13,36 +13,62 @@ import (
 
 	"github.com/Carbonfrost/autogun/pkg/config/format"
 	cli "github.com/Carbonfrost/joe-cli"
+	"github.com/Carbonfrost/joe-cli/extensions/bind"
 )
 
-func Fmt() *cli.Command {
-	return &cli.Command{
-		Name:     "fmt",
-		HelpText: "Apply formatting to files in the workspace",
-		Args: []*cli.Arg{
-			{
-				Name:  "files",
-				Value: new(cli.FileSet),
-				NArg:  cli.TakeUntilNextFlag,
-				Uses:  cli.Accessory("recursive", (*cli.FileSet).RecursiveFlag, cli.HelpText("format directories recursively")),
-			},
-		},
-		Flags: []*cli.Flag{
-			{
-				Name:     "overwrite",
-				Aliases:  []string{"w"},
-				Value:    new(bool),
-				HelpText: "update source files in-place instead of writing to stdout",
-			},
-		},
-		Action: fmtCommand,
-	}
+type FormatParams struct {
+	Files *cli.FileSet
+	Write bool
 }
 
-func fmtCommand(c *cli.Context) error {
-	overwrite := c.Bool("overwrite")
+// Fmt returns an action which formats source. The parameters
+// specify which files to format. When the parameters are not specified,
+// the parameters are gathered from the action's context. Also when
+// the parameters are not specified, the action contains an initializer
+// that contains args and flags meant to provide useful default configuration.
+func Fmt(paramsopt ...FormatParams) cli.Action {
+	return cli.Pipeline(
+		&cli.Prototype{
+			Name:     "fmt",
+			HelpText: "Apply formatting to files in the workspace",
+		},
+		bind.Call(formatSpec, useFormatParams()),
+	)
+}
 
-	files, err := enumerateFiles(c.FileSet("files"))
+func useFormatParams() bind.ActionBinder[FormatParams] {
+	return bind.NewActionBinder(
+		cli.Pipeline(
+			cli.AddArgs([]*cli.Arg{
+				{
+					Name:  "files",
+					Value: new(cli.FileSet),
+					NArg:  cli.TakeUntilNextFlag,
+					Uses:  cli.Accessory("recursive", (*cli.FileSet).RecursiveFlag, cli.HelpText("format directories recursively")),
+				},
+			}...),
+			cli.AddFlags([]*cli.Flag{
+				{
+					Name:     "write",
+					Aliases:  []string{"w"},
+					Value:    new(bool),
+					HelpText: "update source files in-place instead of writing to stdout",
+				},
+			}...),
+		),
+		bind.Func[FormatParams](func(c *cli.Context) (FormatParams, error) {
+			return FormatParams{
+				Files: c.FileSet("files"),
+				Write: c.Bool("write"),
+			}, nil
+		}),
+	)
+}
+
+func formatSpec(f FormatParams) error {
+	overwrite := f.Write
+
+	files, err := enumerateFiles(f.Files)
 	if err != nil {
 		return err
 	}

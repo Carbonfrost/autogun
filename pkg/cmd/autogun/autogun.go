@@ -41,7 +41,7 @@ func NewApp() *cli.App {
 			{Uses: SetVerbose()},
 		},
 		Commands: []*cli.Command{
-			Fmt(),
+			{Uses: workspace.Fmt()},
 			{
 				Name:     "run",
 				HelpText: "Run the specified automations",
@@ -64,7 +64,7 @@ func NewApp() *cli.App {
 				),
 				Action: RunAutomation,
 			},
-			Check(),
+			{Uses: workspace.Check()},
 		},
 		Version: build.Version.Version,
 	}
