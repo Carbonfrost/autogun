@@ -3,7 +3,7 @@ module github.com/Carbonfrost/autogun
 go 1.26.4
 
 require (
-	github.com/Carbonfrost/joe-cli v0.16.1
+	github.com/Carbonfrost/joe-cli v0.17.0
 	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d
 	github.com/chromedp/chromedp v0.14.2
 	github.com/hashicorp/hcl/v2 v2.24.0
