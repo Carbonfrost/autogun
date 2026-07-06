@@ -49,6 +49,58 @@
                         "D"
                     ],
                     "helpText": "use the specified device {ID}"
+                },
+                {
+                    "name": "exec-path",
+                    "helpText": "run the browser at {PATH} (exec allocator)"
+                },
+                {
+                    "name": "proxy-server",
+                    "helpText": "route browser traffic through the proxy {SERVER} (exec allocator)"
+                },
+                {
+                    "name": "user-agent",
+                    "helpText": "set the default User-Agent header to {STRING} (exec allocator)"
+                },
+                {
+                    "name": "user-data-dir",
+                    "helpText": "use {DIR} as the Chrome profile directory (exec allocator)"
+                },
+                {
+                    "name": "window-size",
+                    "helpText": "set the initial window size, given as {WxH} (exec allocator)"
+                },
+                {
+                    "name": "headless",
+                    "helpText": "run the browser in headless mode (exec allocator)"
+                },
+                {
+                    "name": "no-sandbox",
+                    "helpText": "disable the browser sandbox (exec allocator)"
+                },
+                {
+                    "name": "disable-gpu",
+                    "helpText": "disable the GPU process (exec allocator)"
+                },
+                {
+                    "name": "ignore-cert-errors",
+                    "helpText": "ignore certificate-related errors (exec allocator)"
+                },
+                {
+                    "name": "ws-url-timeout",
+                    "helpText": "wait up to {DURATION} for the websocket URL (exec allocator)"
+                },
+                {
+                    "name": "env",
+                    "helpText": "pass {NAME=VALUE} into the browser process, repeatable (exec allocator)"
+                },
+                {
+                    "name": "flag",
+                    "helpText": "pass an arbitrary Chrome {NAME} or {NAME=VALUE} flag, repeatable (exec allocator)"
+                },
+                {
+                    "name": "no-modify-url",
+                    "helpText": "do not rewrite the websocket URL (remote allocator)"
                 }
             ],
             "args": [
@@ -177,7 +229,7 @@
         }
     ],
     "helpText": "Use Autogun to detect and execute Web browser automation",
-    "version": "development",
-    "buildDate": "2026-07-01T00:00:33.654869004-07:00",
+    "version": "(devel)",
+    "buildDate": "2026-07-06T13:13:16.980627219-07:00",
     "comment": "Web browser automation"
 }

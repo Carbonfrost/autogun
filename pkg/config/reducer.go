@@ -40,6 +40,7 @@ func supportsOptionalLabel(name *string, nameRange *hcl.Range) mapper {
 		if err := checkQName(label); label != "" && err != nil {
 			return hcl.Diagnostics{
 				{
+					Subject:  &block.DefRange,
 					Severity: hcl.DiagError,
 					Summary:  fmt.Sprintf("Invalid identifier name %q", label),
 					Detail:   err.Error(),
