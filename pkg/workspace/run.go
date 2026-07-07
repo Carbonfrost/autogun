@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package autogun
+package workspace
 
 import (
 	"encoding/json"
@@ -12,9 +12,9 @@ import (
 	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
-	"github.com/Carbonfrost/autogun/pkg/contextual"
 	"github.com/Carbonfrost/autogun/pkg/model"
 	cli "github.com/Carbonfrost/joe-cli"
+	"github.com/Carbonfrost/joe-cli/extensions/bind"
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -31,24 +31,67 @@ type AutomationQuery struct {
 	Automation *model.Automation
 }
 
-func RunAutomation(c *cli.Context) error {
-	// Build a single automation given the source identified in the context,
-	// which are loaded as files (or navigation URLs). The expression evaluation
-	// functions append additional tasks.
-	auto, err := convertSources(c)
+type RunParams struct {
+	Expression      *expr.Expression
+	AutomationQuery *AutomationQuery
+}
+
+func Run() cli.Action {
+	return cli.Pipeline(
+		&cli.Prototype{
+			Name:     "run",
+			HelpText: "Run the specified automations",
+		},
+		bind.Call2(runSpec, bind.Context(), useRunParams()),
+	)
+}
+
+func useRunParams() bind.ActionBinder[*RunParams] {
+	return bind.NewActionBinder(
+		cli.Pipeline(
+			FlagsAndArgs(),
+			cli.AddArgs([]*cli.Arg{
+				{
+					Name:  "sources",
+					Value: cli.List(),
+					NArg:  cli.TakeUntilNextFlag,
+				},
+				{
+					Name: "expression",
+					Value: &expr.Expression{
+						Exprs: Exprs(),
+					},
+					Options: cli.SortedExprs,
+				},
+			}...),
+		),
+		bind.Func[*RunParams](func(c *cli.Context) (*RunParams, error) {
+			// Build a single automation given the source identified in the context,
+			// which are loaded as files (or navigation URLs). The expression evaluation
+			// functions append additional tasks.
+			auto, err := convertSources(c)
+			if err != nil {
+				return nil, err
+			}
+
+			return &RunParams{
+				Expression: ensurePrinter(expr.FromContext(c, "expression")),
+				AutomationQuery: &AutomationQuery{
+					Automation: auto,
+				},
+			}, nil
+		}),
+	)
+}
+
+func runSpec(ctx *cli.Context, c *RunParams) error {
+	exp := c.Expression
+	err := exp.Evaluate(ctx, c.AutomationQuery)
 	if err != nil {
 		return err
 	}
 
-	exp := ensurePrinter(expr.FromContext(c, "expression"))
-	err = exp.Evaluate(c, &AutomationQuery{
-		Automation: auto,
-	})
-	if err != nil {
-		return err
-	}
-
-	ws := contextual.Workspace(c.Context())
+	ws := FromContext(ctx)
 	mo, err := ws.Load()
 	if err != nil {
 		return err
@@ -63,7 +106,7 @@ func RunAutomation(c *cli.Context) error {
 		return err
 	}
 
-	results, err := driver.Execute(c, auto)
+	results, err := driver.Execute(ctx, c.AutomationQuery.Automation)
 	if err != nil {
 		return err
 	}

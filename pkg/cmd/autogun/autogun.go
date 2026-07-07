@@ -12,7 +12,6 @@ import (
 	"github.com/Carbonfrost/autogun/pkg/workspace"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/color"
-	"github.com/Carbonfrost/joe-cli/extensions/expr"
 )
 
 const versionTemplate = "{{ .App.Name }}, version {{ .App.Version }}{{ ExtendedVersionInfo }}\n"
@@ -42,28 +41,7 @@ func NewApp() *cli.App {
 		},
 		Commands: []*cli.Command{
 			{Uses: workspace.Fmt()},
-			{
-				Name:     "run",
-				HelpText: "Run the specified automations",
-				Args: []*cli.Arg{
-					{
-						Name:  "sources",
-						Value: cli.List(),
-						NArg:  cli.TakeUntilNextFlag,
-					},
-					{
-						Name: "expression",
-						Value: &expr.Expression{
-							Exprs: Exprs(),
-						},
-						Options: cli.SortedExprs,
-					},
-				},
-				Uses: cli.Pipeline(
-					FlagsAndArgs(),
-				),
-				Action: RunAutomation,
-			},
+			{Uses: workspace.Run()},
 			{Uses: workspace.Check()},
 		},
 		Version: build.Version.Version,

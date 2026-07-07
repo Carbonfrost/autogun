@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package autogun_test
+package workspace_test
 
 import (
-	"github.com/Carbonfrost/autogun/pkg/cmd/autogun"
+	"github.com/Carbonfrost/autogun/pkg/workspace"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -14,7 +14,7 @@ var _ = Describe("Exprs", func() {
 
 	var names = func() []string {
 		res := []string{}
-		for _, e := range autogun.Exprs() {
+		for _, e := range workspace.Exprs() {
 			res = append(res, e.Name)
 		}
 		return res

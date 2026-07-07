@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package autogun
+package workspace
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
-	"github.com/Carbonfrost/autogun/pkg/contextual"
 	internalcli "github.com/Carbonfrost/autogun/pkg/internal/cli"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
@@ -225,5 +224,5 @@ func withBinding[V any](binder func(*automation.Allocator, V) error, args ...V) 
 }
 
 func allocatorFromContext(c context.Context) *automation.Allocator {
-	return contextual.Workspace(c).EnsureAllocator()
+	return FromContext(c).EnsureAllocator()
 }
