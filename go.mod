@@ -10,7 +10,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
 	github.com/spf13/afero v1.15.0
-	github.com/zclconf/go-cty v1.18.1
+	github.com/zclconf/go-cty v1.19.0
 	golang.org/x/term v0.44.0
 )
 
@@ -20,6 +20,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
+	github.com/apparentlymart/go-textseg/v17 v17.0.1 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/cristalhq/acmd v0.12.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
