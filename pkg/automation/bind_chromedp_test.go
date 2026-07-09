@@ -52,6 +52,7 @@ var _ = Describe("Bind", func() {
 			Entry("navigate_forward", new(model.NavigateForward)),
 			Entry("reload", new(model.Reload)),
 			Entry("screenshot", new(model.Screenshot)),
+			Entry("send_keys", new(model.SendKeys)),
 			Entry("sleep", new(model.Sleep)),
 			Entry("stop", new(model.Stop)),
 			Entry("title", new(model.Title)),

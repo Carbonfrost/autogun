@@ -63,6 +63,14 @@ type Click struct {
 	Options   *Options
 }
 
+type SendKeys struct {
+	DeclRange hcl.Range
+	Selector  string
+	Selectors []*Selector
+	Options   *Options
+	Keys      hcl.Expression
+}
+
 type DoubleClick struct {
 	DeclRange hcl.Range
 	Selector  string
@@ -158,6 +166,17 @@ var (
 	clearBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "selector"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "selector"},
+			{Type: "options"},
+		},
+	}
+
+	sendKeysBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "selector"},
+			{Name: "keys"},
 		},
 		Blocks: []hcl.BlockHeaderSchema{
 			{Type: "selector"},
@@ -338,6 +357,21 @@ func decodeBlurBlock(block *hcl.Block) (*Blur, hcl.Diagnostics) {
 	)
 }
 
+func decodeSendKeysBlock(block *hcl.Block) (*SendKeys, hcl.Diagnostics) {
+	f := new(SendKeys)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			sendKeysBlockSchema,
+			withAttribute("selector", &f.Selector),
+			withAttributeExpression("keys", &f.Keys),
+			supportsSelectorBlocks(&f.Selectors, &f.Options),
+		),
+	)
+}
+
 func decodeClearBlock(block *hcl.Block) (*Clear, hcl.Diagnostics) {
 	f := new(Clear)
 	return reduceTask(
@@ -448,6 +482,7 @@ func (*NavigateBack) taskSigil()    {}
 func (*NavigateForward) taskSigil() {}
 func (*Reload) taskSigil()          {}
 func (*Screenshot) taskSigil()      {}
+func (*SendKeys) taskSigil()        {}
 func (*Sleep) taskSigil()           {}
 func (*Stop) taskSigil()            {}
 func (*Title) taskSigil()           {}

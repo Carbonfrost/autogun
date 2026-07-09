@@ -72,6 +72,12 @@ func taskFromConfig(task config.Task) Task {
 			Selectors: selectorsFromConfig(t.Selector, t.Selectors),
 			Options:   optionsFromConfig(t.Options),
 		}
+	case *config.SendKeys:
+		return &SendKeys{
+			Selectors: selectorsFromConfig(t.Selector, t.Selectors),
+			Options:   optionsFromConfig(t.Options),
+			Keys:      ExpressionFromHCL(t.Keys),
+		}
 	case *config.WaitVisible:
 		return &WaitVisible{
 			Selectors: selectorsFromConfig(t.Selector, t.Selectors),

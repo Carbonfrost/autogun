@@ -1,0 +1,15 @@
+automation "send_keys" {
+  navigate {
+    url = "https://example.com"
+  }
+
+  send_keys {
+    selector = "#grape"
+    keys     = "hello world"
+
+    options {
+      retry_interval = "5m"
+      at_least       = 2
+    }
+  }
+}

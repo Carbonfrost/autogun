@@ -48,6 +48,9 @@ var (
 				Type: "double_click",
 			},
 			{
+				Type: "send_keys",
+			},
+			{
 				Type: "wait_visible",
 			},
 			{
@@ -79,6 +82,7 @@ var (
 		"navigate_back":    taskMapping(decodeNavigateBackBlock),
 		"navigate_forward": taskMapping(decodeNavigateForwardBlock),
 		"screenshot":       taskMapping(decodeScreenshotBlock),
+		"send_keys":        taskMapping(decodeSendKeysBlock),
 		"reload":           taskMapping(decodeReloadBlock),
 		"sleep":            taskMapping(decodeSleepBlock),
 		"stop":             taskMapping(decodeStopBlock),

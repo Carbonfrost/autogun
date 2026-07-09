@@ -114,6 +114,19 @@ var _ = Describe("LoadFile", func() {
 					}))),
 			})),
 
+			Entry("send_keys", "send_keys.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"1": And(
+					BeAssignableToTypeOf(&config.SendKeys{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Selector": Equal("#grape"),
+						"Keys":     WithTransform(toString, Equal("hello world")),
+						"Options": PointTo(MatchFields(IgnoreExtras, Fields{
+							"AtLeast":       PointTo(Equal(2)),
+							"RetryInterval": PointTo(Equal(5 * time.Minute)),
+						})),
+					}))),
+			})),
+
 			Entry("wait_visible", "wait_visible.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"1": And(
 					BeAssignableToTypeOf(&config.WaitVisible{}),

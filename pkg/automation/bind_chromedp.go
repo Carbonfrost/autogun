@@ -49,6 +49,17 @@ func bindTask(task model.Task) chromedp.Action {
 		return bindSelector("Blur", chromedp.Blur, t.Selectors, t.Options)
 	case *model.Clear:
 		return bindSelector("Clear", chromedp.Clear, t.Selectors, t.Options)
+	case *model.SendKeys:
+		return taskThunk(func(c context.Context) (Task, error) {
+			v, err := evalContext(c, t.Keys)
+			if err != nil {
+				return nil, err
+			}
+			keys := v.AsString()
+			return bindSelector("Send keys", func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
+				return chromedp.SendKeys(sel, keys, opts...)
+			}, t.Selectors, t.Options), nil
+		})
 	case *model.Sleep:
 		return tasks(chromedp.Sleep(t.Duration), printf("Sleep %v", t.Duration))
 	case *model.Reload:

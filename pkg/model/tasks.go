@@ -47,6 +47,12 @@ type Click struct {
 	Options   *Options
 }
 
+type SendKeys struct {
+	Selectors []*Selector
+	Options   *Options
+	Keys      Expression
+}
+
 type DoubleClick struct {
 	Selectors []*Selector
 	Options   *Options
@@ -98,6 +104,7 @@ func (*NavigateBack) taskSigil()    {}
 func (*NavigateForward) taskSigil() {}
 func (*Reload) taskSigil()          {}
 func (*Screenshot) taskSigil()      {}
+func (*SendKeys) taskSigil()        {}
 func (*Sleep) taskSigil()           {}
 func (*Source) taskSigil()          {}
 func (*Stop) taskSigil()            {}
