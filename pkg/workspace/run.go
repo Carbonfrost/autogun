@@ -33,6 +33,7 @@ type AutomationQuery struct {
 	// Selectors is the current selector set, updated by the -select expression
 	// and propagated to each subsequent task that targets elements.
 	Selectors []*model.Selector
+	Options   *model.Options
 }
 
 type RunParams struct {

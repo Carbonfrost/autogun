@@ -185,7 +185,27 @@ func Exprs() []*expr.Expr {
 			HelpText: "print out version information",
 			Evaluate: Version(),
 		},
+		{
+			Name:     "options", // -options retry_interval=TIME,at_least=1
+			Aliases:  []string{"O"},
+			HelpText: "specify options for handling selector",
+			Args: []*cli.Arg{
+				{
+					Name:      "value",
+					Value:     structure.Of(new(model.Options)),
+					UsageText: "{retry_interval=TIME,at_least=NUM}",
+				},
+			},
+			Evaluate: expr.BindEvaluator(SetOptions, bind.Value[model.Options]("value")),
+		},
 	}
+}
+
+func SetOptions(m model.Options) expr.Evaluator {
+	return withQuery(func(q *AutomationQuery) error {
+		q.Options = &m
+		return nil
+	})
 }
 
 func Screenshot(s *ScreenshotArgs) expr.Evaluator {
@@ -207,18 +227,26 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 		}
 	}
 
-	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
 		if local != nil {
 			selectors = local
+		}
+
+		var localOpts model.Options
+		if opts != nil {
+			localOpts = *opts
+			if s.RetryInterval != nil {
+				localOpts.RetryInterval = s.RetryInterval
+			}
+			if s.AtLeast != nil {
+				localOpts.AtLeast = s.AtLeast
+			}
 		}
 		return &model.Screenshot{
 			Name:      cmp.Or(s.File, "screenshot.png"),
 			Scale:     scale,
 			Selectors: selectors,
-			Options: &model.Options{
-				RetryInterval: s.RetryInterval,
-				AtLeast:       s.AtLeast,
-			},
+			Options:   &localOpts,
 		}
 	})
 }
@@ -231,42 +259,43 @@ func Select(set []*model.Selector) expr.Evaluator {
 }
 
 func Blur() expr.Evaluator {
-	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
-		return &model.Blur{Selectors: selectors}
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+		return &model.Blur{Selectors: selectors, Options: opts}
 	})
 }
 
 func Clear() expr.Evaluator {
-	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
-		return &model.Clear{Selectors: selectors}
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+		return &model.Clear{Selectors: selectors, Options: opts}
 	})
 }
 
 func Click() expr.Evaluator {
-	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
-		return &model.Click{Selectors: selectors}
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+		return &model.Click{Selectors: selectors, Options: opts}
 	})
 }
 
 func DoubleClick() expr.Evaluator {
-	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
-		return &model.DoubleClick{Selectors: selectors}
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+		return &model.DoubleClick{Selectors: selectors, Options: opts}
 	})
 }
 
 func SendKeys(keys string) expr.Evaluator {
 	keysExp, _ := parseHCL(keys)
-	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
 		return &model.SendKeys{
 			Selectors: selectors,
+			Options:   opts,
 			Keys:      model.ExpressionFromHCL(keysExp),
 		}
 	})
 }
 
 func WaitVisible() expr.Evaluator {
-	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
-		return &model.WaitVisible{Selectors: selectors}
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+		return &model.WaitVisible{Selectors: selectors, Options: opts}
 	})
 }
 
@@ -347,9 +376,9 @@ func withQuery(fn func(*AutomationQuery) error) expr.EvaluatorFunc {
 	}
 }
 
-func wrapSelectorTask(build func(selectors []*model.Selector) model.Task) expr.EvaluatorFunc {
+func wrapSelectorTask(build func(selectors []*model.Selector, opts *model.Options) model.Task) expr.EvaluatorFunc {
 	return withQuery(func(query *AutomationQuery) error {
-		appendTask(query.Automation, build(query.Selectors))
+		appendTask(query.Automation, build(query.Selectors, query.Options))
 		return nil
 	})
 }

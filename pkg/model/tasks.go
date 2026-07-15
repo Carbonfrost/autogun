@@ -71,8 +71,8 @@ type Screenshot struct {
 }
 
 type Options struct {
-	RetryInterval *time.Duration
-	AtLeast       *int
+	RetryInterval *time.Duration `mapstructure:"retry_interval"`
+	AtLeast       *int           `mapstructure:"at_least"`
 }
 
 type Sleep struct {
