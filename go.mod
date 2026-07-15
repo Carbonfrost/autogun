@@ -4,8 +4,8 @@ go 1.26.4
 
 require (
 	github.com/Carbonfrost/joe-cli v0.17.0
-	github.com/chromedp/cdproto v0.0.0-20260704091341-6ca7914c3938
-	github.com/chromedp/chromedp v0.15.1
+	github.com/chromedp/cdproto v0.0.0-20260714215040-dc233986426f
+	github.com/chromedp/chromedp v0.16.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
@@ -62,7 +62,7 @@ require (
 	golang.org/x/mod v0.37.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/tools v0.47.0 // indirect
 	honnef.co/go/tools v0.7.0 // indirect
