@@ -29,6 +29,10 @@ var urlPrefix = []string{
 
 type AutomationQuery struct {
 	Automation *model.Automation
+
+	// Selectors is the current selector set, updated by the -select expression
+	// and propagated to each subsequent task that targets elements.
+	Selectors []*model.Selector
 }
 
 type RunParams struct {

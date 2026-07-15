@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	internalcli "github.com/Carbonfrost/autogun/pkg/internal/cli"
 	"github.com/Carbonfrost/autogun/pkg/model"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
@@ -111,6 +112,56 @@ func Exprs() []*expr.Expr {
 			Evaluate: expr.BindEvaluator(Sleep, bind.Duration("duration")),
 		},
 		{
+			Name:     "select", // -select SELECTORS
+			HelpText: "set the selector set applied to subsequent operations",
+			Args: []*cli.Arg{
+				{
+					Name:      "selectors",
+					Value:     new(internalcli.SelectorSet),
+					NArg:      1,
+					UsageText: "SELECTORS",
+				},
+			},
+			Evaluate: expr.BindEvaluator(Select, bind.Value[[]*model.Selector]("selectors")),
+		},
+		{
+			Name:     "blur", // -blur
+			HelpText: "blur the selected element",
+			Evaluate: Blur(),
+		},
+		{
+			Name:     "clear", // -clear
+			HelpText: "clear the selected element",
+			Evaluate: Clear(),
+		},
+		{
+			Name:     "click", // -click
+			HelpText: "click the selected element",
+			Evaluate: Click(),
+		},
+		{
+			Name:     "doubleclick", // -doubleclick
+			HelpText: "double-click the selected element",
+			Evaluate: DoubleClick(),
+		},
+		{
+			Name:     "send_keys", // -send_keys KEYS
+			HelpText: "send {KEYS} to the selected element",
+			Args: []*cli.Arg{
+				{
+					Name:  "keys",
+					Value: new(string),
+					NArg:  1,
+				},
+			},
+			Evaluate: expr.BindEvaluator(SendKeys, bind.String("keys")),
+		},
+		{
+			Name:     "wait_visible", // -wait_visible
+			HelpText: "wait for the selected element to become visible",
+			Evaluate: WaitVisible(),
+		},
+		{
 			Name:     "screenshot", // -screenshot [scale=SCALE,]
 			HelpText: "capture a screenshot",
 			Args: []*cli.Arg{
@@ -143,10 +194,11 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 		scale = *s.Scale
 	}
 
-	// TODO This selector logic is likely temporary until a selector expression is finalized
-	var selectors []*model.Selector
+	// The local selector, when set, takes precedence over the selector set from
+	// the AutomationQuery.
+	var local []*model.Selector
 	if s.Selector != "" {
-		selectors = []*model.Selector{
+		local = []*model.Selector{
 			{
 				Target: s.Selector,
 				By:     s.By,
@@ -155,14 +207,66 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 		}
 	}
 
-	return wrapTaskAsEvaluator(&model.Screenshot{
-		Name:      cmp.Or(s.File, "screenshot.png"),
-		Scale:     scale,
-		Selectors: selectors,
-		Options: &model.Options{
-			RetryInterval: s.RetryInterval,
-			AtLeast:       s.AtLeast,
-		},
+	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+		if local != nil {
+			selectors = local
+		}
+		return &model.Screenshot{
+			Name:      cmp.Or(s.File, "screenshot.png"),
+			Scale:     scale,
+			Selectors: selectors,
+			Options: &model.Options{
+				RetryInterval: s.RetryInterval,
+				AtLeast:       s.AtLeast,
+			},
+		}
+	})
+}
+
+func Select(set []*model.Selector) expr.Evaluator {
+	return withQuery(func(q *AutomationQuery) error {
+		q.Selectors = set
+		return nil
+	})
+}
+
+func Blur() expr.Evaluator {
+	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+		return &model.Blur{Selectors: selectors}
+	})
+}
+
+func Clear() expr.Evaluator {
+	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+		return &model.Clear{Selectors: selectors}
+	})
+}
+
+func Click() expr.Evaluator {
+	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+		return &model.Click{Selectors: selectors}
+	})
+}
+
+func DoubleClick() expr.Evaluator {
+	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+		return &model.DoubleClick{Selectors: selectors}
+	})
+}
+
+func SendKeys(keys string) expr.Evaluator {
+	keysExp, _ := parseHCL(keys)
+	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+		return &model.SendKeys{
+			Selectors: selectors,
+			Keys:      model.ExpressionFromHCL(keysExp),
+		}
+	})
+}
+
+func WaitVisible() expr.Evaluator {
+	return wrapSelectorTask(func(selectors []*model.Selector) model.Task {
+		return &model.WaitVisible{Selectors: selectors}
 	})
 }
 
@@ -228,15 +332,26 @@ func wrapTaskAsEvaluator(act model.Task) expr.EvaluatorFunc {
 }
 
 func withAutomation(fn func(*model.Automation) error) expr.EvaluatorFunc {
+	return withQuery(func(query *AutomationQuery) error {
+		return fn(query.Automation)
+	})
+}
+
+func withQuery(fn func(*AutomationQuery) error) expr.EvaluatorFunc {
 	return func(_ *cli.Context, v any, yield func(any) error) error {
 		query := v.(*AutomationQuery)
-		a := query.Automation
-		err := fn(a)
-		if err != nil {
+		if err := fn(query); err != nil {
 			return err
 		}
 		return yield(query)
 	}
+}
+
+func wrapSelectorTask(build func(selectors []*model.Selector) model.Task) expr.EvaluatorFunc {
+	return withQuery(func(query *AutomationQuery) error {
+		appendTask(query.Automation, build(query.Selectors))
+		return nil
+	})
 }
 
 func appendTask(a *model.Automation, t model.Task) {

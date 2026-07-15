@@ -16,7 +16,7 @@ type SelectorSet struct {
 	// By sets up the selector strategy that applies to each selector. It can't
 	// actually be set via the flag Value.
 	By        model.SelectorBy
-	Selectors []model.Selector
+	Selectors []*model.Selector
 }
 
 func (s *SelectorSet) by() model.SelectorBy {
@@ -26,7 +26,7 @@ func (s *SelectorSet) by() model.SelectorBy {
 	return s.By
 }
 
-func (s *SelectorSet) Value() []model.Selector {
+func (s *SelectorSet) Value() []*model.Selector {
 	return s.Selectors
 }
 
@@ -35,12 +35,17 @@ func (s *SelectorSet) Value() []model.Selector {
 // model.ByQueryAll.
 func (s *SelectorSet) Set(arg string) error {
 	for _, text := range strings.Split(arg, ",") {
-		s.Selectors = append(s.Selectors, model.Selector{
+		s.Selectors = append(s.Selectors, &model.Selector{
 			Target: text,
 			By:     s.by(),
 		})
 	}
 	return nil
+}
+
+func (s *SelectorSet) Reset() {
+	s.By = ""
+	s.Selectors = nil
 }
 
 func (s *SelectorSet) String() string {

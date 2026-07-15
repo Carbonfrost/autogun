@@ -23,7 +23,7 @@ var _ = Describe("SelectorSet", func() {
 			err := actual.Set("button")
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actual.Selectors).To(Equal([]model.Selector{
+			Expect(actual.Selectors).To(Equal([]*model.Selector{
 				{Target: "button", By: model.ByQueryAll},
 			}))
 		})
@@ -33,7 +33,7 @@ var _ = Describe("SelectorSet", func() {
 			err := actual.Set("button,input,a")
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actual.Selectors).To(Equal([]model.Selector{
+			Expect(actual.Selectors).To(Equal([]*model.Selector{
 				{Target: "button", By: model.ByQueryAll},
 				{Target: "input", By: model.ByQueryAll},
 				{Target: "a", By: model.ByQueryAll},
@@ -52,7 +52,7 @@ var _ = Describe("SelectorSet", func() {
 			err := actual.Set("first,second")
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actual.Selectors).To(Equal([]model.Selector{
+			Expect(actual.Selectors).To(Equal([]*model.Selector{
 				{Target: "first", By: model.ByID},
 				{Target: "second", By: model.ByID},
 			}))
@@ -63,7 +63,7 @@ var _ = Describe("SelectorSet", func() {
 			Expect(actual.Set("button")).To(Succeed())
 			Expect(actual.Set("input")).To(Succeed())
 
-			Expect(actual.Selectors).To(Equal([]model.Selector{
+			Expect(actual.Selectors).To(Equal([]*model.Selector{
 				{Target: "button", By: model.ByQueryAll},
 				{Target: "input", By: model.ByQueryAll},
 			}))
@@ -99,7 +99,7 @@ var _ = Describe("SelectorSet", func() {
 			})
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(set.Selectors).To(Equal([]model.Selector{
+			Expect(set.Selectors).To(Equal([]*model.Selector{
 				{Target: "button", By: model.ByQueryAll},
 				{Target: "input", By: model.ByQueryAll},
 			}))
@@ -111,8 +111,9 @@ var _ = Describe("SelectorSet", func() {
 				Name: "app",
 				Flags: []*cli.Flag{
 					{
-						Name:  "selector",
-						Value: set,
+						Name:    "selector",
+						Value:   set,
+						Options: cli.Merge,
 					},
 				},
 				Action: func() {},
@@ -123,7 +124,7 @@ var _ = Describe("SelectorSet", func() {
 			})
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(set.Selectors).To(Equal([]model.Selector{
+			Expect(set.Selectors).To(Equal([]*model.Selector{
 				{Target: "first", By: model.ByID},
 				{Target: "second", By: model.ByID},
 				{Target: "third", By: model.ByID},
