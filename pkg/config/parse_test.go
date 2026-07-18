@@ -49,6 +49,19 @@ var _ = Describe("LoadFile", func() {
 					}))),
 			})),
 
+			Entry("inner_html", "inner_html.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"1": And(
+					BeAssignableToTypeOf(&config.InnerHTML{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Name":     Equal("content"),
+						"Selector": Equal("#aubergine"),
+						"Options": PointTo(MatchFields(IgnoreExtras, Fields{
+							"AtLeast":       PointTo(Equal(1)),
+							"RetryInterval": PointTo(Equal(5 * time.Second)),
+						})),
+					}))),
+			})),
+
 			Entry("blur", "blur.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"1": And(
 					BeAssignableToTypeOf(&config.Blur{}),

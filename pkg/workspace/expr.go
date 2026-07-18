@@ -181,6 +181,11 @@ func Exprs() []*expr.Expr {
 			Evaluate: Title("title"),
 		},
 		{
+			Name:     "inner_html", // -inner_html
+			HelpText: "store the inner HTML of the selected element",
+			Evaluate: InnerHTML("inner_html"),
+		},
+		{
 			Name:     "version", // -version
 			HelpText: "print out version information",
 			Evaluate: Version(),
@@ -342,6 +347,12 @@ func Stop() expr.Evaluator {
 
 func Title(name string) expr.Evaluator {
 	return wrapTaskAsEvaluator(&model.Title{Name: name})
+}
+
+func InnerHTML(name string) expr.Evaluator {
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+		return &model.InnerHTML{Name: name, Selectors: selectors, Options: opts}
+	})
 }
 
 func Version() expr.Evaluator {

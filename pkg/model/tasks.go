@@ -32,6 +32,12 @@ type Eval struct {
 	Script string
 }
 
+type InnerHTML struct {
+	Name      string
+	Selectors []*Selector
+	Options   *Options
+}
+
 type Blur struct {
 	Selectors []*Selector
 	Options   *Options
@@ -99,6 +105,7 @@ func (*Click) taskSigil()           {}
 func (*DoubleClick) taskSigil()     {}
 func (*Eval) taskSigil()            {}
 func (*Flow) taskSigil()            {}
+func (*InnerHTML) taskSigil()       {}
 func (*Navigate) taskSigil()        {}
 func (*NavigateBack) taskSigil()    {}
 func (*NavigateForward) taskSigil() {}

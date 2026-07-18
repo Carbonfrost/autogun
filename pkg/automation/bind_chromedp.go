@@ -104,6 +104,20 @@ func bindTask(task model.Task) chromedp.Action {
 			})
 		})
 
+	case *model.InnerHTML:
+		return usingStringVariable(t.Name, func(str *string) chromedp.Action {
+			return chromedp.ActionFunc(func(c context.Context) error {
+				err := bindSelector(
+					fmt.Sprintf("Extract inner HTML into variable `%s'", t.Name),
+					func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
+						return chromedp.InnerHTML(sel, str, opts...)
+					}, t.Selectors, t.Options).Do(c)
+				v, _ := gocty.ToCtyValue(*str, cty.String)
+				evalContextFrom(c).Variables[t.Name] = v
+				return err
+			})
+		})
+
 	case *model.Version:
 		return printBrowserVersion(browser.GetVersion())
 

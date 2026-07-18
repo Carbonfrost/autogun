@@ -36,6 +36,10 @@ var (
 				LabelNames: []string{"name"},
 			},
 			{
+				Type:       "inner_html",
+				LabelNames: []string{"name"},
+			},
+			{
 				Type: "blur",
 			},
 			{
@@ -78,6 +82,7 @@ var (
 		"click":            taskMapping(decodeClickBlock),
 		"double_click":     taskMapping(decodeDoubleClickBlock),
 		"eval":             taskMapping(decodeEvalBlock),
+		"inner_html":       taskMapping(decodeInnerHTMLBlock),
 		"navigate":         taskMapping(decodeNavigateBlock),
 		"navigate_back":    taskMapping(decodeNavigateBackBlock),
 		"navigate_forward": taskMapping(decodeNavigateForwardBlock),

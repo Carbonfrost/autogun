@@ -42,6 +42,15 @@ type Eval struct {
 	Script    string
 }
 
+type InnerHTML struct {
+	DeclRange hcl.Range
+	NameRange hcl.Range
+	Name      string
+	Selector  string
+	Selectors []*Selector
+	Options   *Options
+}
+
 type Blur struct {
 	DeclRange hcl.Range
 	Selector  string
@@ -132,6 +141,16 @@ var (
 	}
 
 	titleBlockSchema = &hcl.BodySchema{}
+
+	innerHTMLBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "selector"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "selector"},
+			{Type: "options"},
+		},
+	}
 
 	clickBlockSchema = &hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
@@ -297,6 +316,21 @@ func decodeTitleBlock(block *hcl.Block) (*Title, hcl.Diagnostics) {
 		supportsOptionalLabel(&f.Name, &f.NameRange),
 		supportsPartialContentSchema(
 			titleBlockSchema,
+		),
+	)
+}
+
+func decodeInnerHTMLBlock(block *hcl.Block) (*InnerHTML, hcl.Diagnostics) {
+	f := new(InnerHTML)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsOptionalLabel(&f.Name, &f.NameRange),
+		supportsPartialContentSchema(
+			innerHTMLBlockSchema,
+			withAttribute("selector", &f.Selector),
+			supportsSelectorBlocks(&f.Selectors, &f.Options),
 		),
 	)
 }
@@ -477,6 +511,7 @@ func (*Clear) taskSigil()           {}
 func (*Click) taskSigil()           {}
 func (*DoubleClick) taskSigil()     {}
 func (*Eval) taskSigil()            {}
+func (*InnerHTML) taskSigil()       {}
 func (*Navigate) taskSigil()        {}
 func (*NavigateBack) taskSigil()    {}
 func (*NavigateForward) taskSigil() {}

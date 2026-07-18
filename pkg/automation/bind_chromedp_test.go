@@ -47,6 +47,7 @@ var _ = Describe("Bind", func() {
 			Entry("blur", new(model.Blur)),
 			Entry("clear", new(model.Clear)),
 			Entry("eval", new(model.Eval)),
+			Entry("inner_html", new(model.InnerHTML)),
 			Entry("navigate", new(model.Navigate)),
 			Entry("navigate_back", new(model.NavigateBack)),
 			Entry("navigate_forward", new(model.NavigateForward)),

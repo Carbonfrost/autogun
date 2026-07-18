@@ -52,6 +52,12 @@ func taskFromConfig(task config.Task) Task {
 		return &Title{Name: t.Name}
 	case *config.Eval:
 		return &Eval{Name: t.Name, Script: t.Script}
+	case *config.InnerHTML:
+		return &InnerHTML{
+			Name:      t.Name,
+			Selectors: selectorsFromConfig(t.Selector, t.Selectors),
+			Options:   optionsFromConfig(t.Options),
+		}
 	case *config.Blur:
 		return &Blur{
 			Selectors: selectorsFromConfig(t.Selector, t.Selectors),

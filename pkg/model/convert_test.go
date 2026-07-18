@@ -30,6 +30,7 @@ var _ = Describe("FromConfig", func() {
 			Entry("click", new(config.Click), new(model.Click)),
 			Entry("double_click", new(config.DoubleClick), new(model.DoubleClick)),
 			Entry("eval", new(config.Eval), new(model.Eval)),
+			Entry("inner_html", new(config.InnerHTML), new(model.InnerHTML)),
 			Entry("navigate", new(config.Navigate), new(model.Navigate)),
 			Entry("navigate_back", new(config.NavigateBack), new(model.NavigateBack)),
 			Entry("navigate_forward", new(config.NavigateForward), new(model.NavigateForward)),
