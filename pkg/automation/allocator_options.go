@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Carbonfrost/autogun/pkg/model"
 	"github.com/chromedp/chromedp"
 )
 
@@ -40,7 +41,7 @@ type AllocatorOptions struct {
 	UserDataDir           *string
 	ProxyServer           *string
 	UserAgent             *string
-	WindowSize            *WindowSize
+	WindowSize            *model.WindowSize
 	IgnoreCertErrors      *bool
 	NoSandbox             *bool
 	NoFirstRun            *bool
@@ -53,12 +54,6 @@ type AllocatorOptions struct {
 	// NoModifyURL maps to chromedp.NoModifyURL. When true, the remote
 	// allocator will not attempt to rewrite the provided websocket URL.
 	NoModifyURL *bool
-}
-
-// WindowSize is the data form of the chromedp.WindowSize(width, height) option.
-type WindowSize struct {
-	Width  int
-	Height int
 }
 
 func (o *AllocatorOptions) warnRemoteOnlyForExec() {

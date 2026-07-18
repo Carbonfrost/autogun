@@ -12,6 +12,7 @@ import (
 
 	"github.com/Carbonfrost/autogun/pkg/automation"
 	internalcli "github.com/Carbonfrost/autogun/pkg/internal/cli"
+	"github.com/Carbonfrost/autogun/pkg/model"
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
 )
@@ -121,11 +122,12 @@ func SetUserDataDir(v ...string) cli.Action {
 	)
 }
 
-func SetWindowSize(v ...string) cli.Action {
+func SetWindowSize(v ...model.WindowSize) cli.Action {
 	return cli.Pipeline(
 		&cli.Prototype{
 			Name:     "window-size",
 			HelpText: "set the initial window size, given as {WxH} (exec allocator)",
+			Value:    new(internalcli.WindowSize),
 		},
 		withBinding((*automation.Allocator).SetWindowSize, v...),
 	)

@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -125,25 +124,9 @@ func (a *Allocator) SetEnv(v []string) error {
 	return nil
 }
 
-// SetWindowSize sets the initial window size, given as "WxH" or "W,H"
-// (exec allocator).
-func (a *Allocator) SetWindowSize(v string) error {
-	if v == "" {
-		return nil
-	}
-	sep := strings.IndexAny(v, "x,")
-	if sep < 0 {
-		return fmt.Errorf("invalid window size %q: expected WxH", v)
-	}
-	width, err := strconv.Atoi(strings.TrimSpace(v[:sep]))
-	if err != nil {
-		return fmt.Errorf("invalid window size %q: %w", v, err)
-	}
-	height, err := strconv.Atoi(strings.TrimSpace(v[sep+1:]))
-	if err != nil {
-		return fmt.Errorf("invalid window size %q: %w", v, err)
-	}
-	a.ensureOptions().WindowSize = &WindowSize{Width: width, Height: height}
+// SetWindowSize sets the initial window size (exec allocator).
+func (a *Allocator) SetWindowSize(v model.WindowSize) error {
+	a.ensureOptions().WindowSize = &v
 	return nil
 }
 
