@@ -27,28 +27,43 @@ type usingStringVariableFunc = func(txt *string) chromedp.Action
 func bindTask(task model.Task) chromedp.Action {
 	switch t := task.(type) {
 	case *model.Navigate:
-		return chromedp.ActionFunc(func(c context.Context) error {
+		return taskThunk(func(c context.Context) (Task, error) {
 			v, err := evalContext(c, t.URL)
 			if err != nil {
-				return nil
+				return nil, err
 			}
 			url := v.AsString()
-			return tasks(chromedp.Navigate(url), printf("Navigate to `%s'", url)).Do(c)
+			return tasks(chromedp.Navigate(url), printf("Navigate to `%s'", url)), nil
 		})
 	case *model.NavigateForward:
 		return tasks(chromedp.NavigateForward(), printf("Navigate forward"))
 	case *model.NavigateBack:
 		return tasks(chromedp.NavigateBack(), printf("Navigate back"))
 	case *model.WaitVisible:
-		return bindSelector("Wait until visible", chromedp.WaitVisible, t.Selectors, t.Options)
+		return tasks(
+			printSelector("Wait until visible", t.Selectors, t.Options),
+			bindSelector(chromedp.WaitVisible, t.Selectors, t.Options),
+		)
 	case *model.Click:
-		return bindSelector("Click", chromedp.Click, t.Selectors, t.Options)
+		return tasks(
+			printSelector("Click", t.Selectors, t.Options),
+			bindSelector(chromedp.Click, t.Selectors, t.Options),
+		)
 	case *model.DoubleClick:
-		return bindSelector("Double click", chromedp.DoubleClick, t.Selectors, t.Options)
+		return tasks(
+			printSelector("Double click", t.Selectors, t.Options),
+			bindSelector(chromedp.DoubleClick, t.Selectors, t.Options),
+		)
 	case *model.Blur:
-		return bindSelector("Blur", chromedp.Blur, t.Selectors, t.Options)
+		return tasks(
+			printSelector("Blur", t.Selectors, t.Options),
+			bindSelector(chromedp.Blur, t.Selectors, t.Options),
+		)
 	case *model.Clear:
-		return bindSelector("Clear", chromedp.Clear, t.Selectors, t.Options)
+		return tasks(
+			printSelector("Clear", t.Selectors, t.Options),
+			bindSelector(chromedp.Clear, t.Selectors, t.Options),
+		)
 	case *model.SendKeys:
 		return taskThunk(func(c context.Context) (Task, error) {
 			v, err := evalContext(c, t.Keys)
@@ -56,9 +71,12 @@ func bindTask(task model.Task) chromedp.Action {
 				return nil, err
 			}
 			keys := v.AsString()
-			return bindSelector("Send keys", func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
-				return chromedp.SendKeys(sel, keys, opts...)
-			}, t.Selectors, t.Options), nil
+			return tasks(
+				printSelector("Send keys", t.Selectors, t.Options),
+				bindSelector(func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
+					return chromedp.SendKeys(sel, keys, opts...)
+				}, t.Selectors, t.Options),
+			), nil
 		})
 	case *model.Sleep:
 		return tasks(chromedp.Sleep(t.Duration), printf("Sleep %v", t.Duration))
@@ -72,49 +90,46 @@ func bindTask(task model.Task) chromedp.Action {
 			return tasks(requestOutputFile(filename, chromedp.CaptureScreenshot), printf("Capture screenshot"))
 		}
 
-		return bindSelector("Capture screenshot", func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
-			curry := func(file *[]byte) chromedp.Action {
-				return chromedp.Screenshot(sel, file, opts...)
-			}
-			if t.Scale > 0 {
-				curry = func(file *[]byte) chromedp.Action {
-					return chromedp.ScreenshotScale(sel, t.Scale, file, opts...)
+		return tasks(
+			printSelector("Capture screenshot", t.Selectors, t.Options),
+			bindSelector(func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
+				curry := func(file *[]byte) chromedp.Action {
+					return chromedp.Screenshot(sel, file, opts...)
 				}
-			}
+				if t.Scale > 0 {
+					curry = func(file *[]byte) chromedp.Action {
+						return chromedp.ScreenshotScale(sel, t.Scale, file, opts...)
+					}
+				}
 
-			return requestOutputFile(filename, curry)
-		}, t.Selectors, t.Options)
+				return requestOutputFile(filename, curry)
+			}, t.Selectors, t.Options),
+		)
 
 	case *model.Eval:
 		return usingVariable(t.Name, func(msg *json.RawMessage) chromedp.Action {
-			return chromedp.ActionFunc(func(c context.Context) error {
-				err := tasks(chromedp.Evaluate(t.Script, msg), printf("Evaluate script `%s'", t.Name)).Do(c)
-				evalContextFrom(c).Variables[t.Name] = umarshalData(*msg)
-				return err
+			return taskThunk(func(c context.Context) (Task, error) {
+				return tasks(chromedp.Evaluate(t.Script, msg), printf("Evaluate script `%s'", t.Name)), nil
 			})
 		})
 
 	case *model.Title:
 		return usingStringVariable(t.Name, func(str *string) chromedp.Action {
-			return chromedp.ActionFunc(func(c context.Context) error {
-				err := tasks(chromedp.Title(str), printf("Extract title into variable `%s'", t.Name)).Do(c)
-				v, _ := gocty.ToCtyValue(*str, cty.String)
-				evalContextFrom(c).Variables[t.Name] = v
-				return err
+			return taskThunk(func(c context.Context) (Task, error) {
+				return tasks(chromedp.Title(str), printf("Extract title into variable `%s'", t.Name)), nil
 			})
 		})
 
 	case *model.InnerHTML:
 		return usingStringVariable(t.Name, func(str *string) chromedp.Action {
-			return chromedp.ActionFunc(func(c context.Context) error {
-				err := bindSelector(
-					fmt.Sprintf("Extract inner HTML into variable `%s'", t.Name),
-					func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
-						return chromedp.InnerHTML(sel, str, opts...)
-					}, t.Selectors, t.Options).Do(c)
-				v, _ := gocty.ToCtyValue(*str, cty.String)
-				evalContextFrom(c).Variables[t.Name] = v
-				return err
+			return taskThunk(func(c context.Context) (Task, error) {
+				return tasks(
+					printSelector(fmt.Sprintf("Extract inner HTML into variable `%s'", t.Name), t.Selectors, t.Options),
+					bindSelector(
+						func(sel any, opts ...chromedp.QueryOption) chromedp.QueryAction {
+							return chromedp.InnerHTML(sel, str, opts...)
+						}, t.Selectors, t.Options),
+				), nil
 			})
 		})
 
@@ -146,9 +161,8 @@ func umarshalData(msg json.RawMessage) cty.Value {
 	return v
 }
 
-func bindSelector(desc string, fn produceQueryActionFunc, sels []*model.Selector, options *model.Options) Task {
+func bindSelector(fn produceQueryActionFunc, sels []*model.Selector, options *model.Options) Task {
 	var tasks chromedp.Tasks = make([]chromedp.Action, len(sels))
-	selectorDesc := make([]string, len(sels))
 	for i, s := range sels {
 		opts := make([]chromedp.QueryOption, 0)
 		if s.By != "" {
@@ -158,13 +172,21 @@ func bindSelector(desc string, fn produceQueryActionFunc, sels []*model.Selector
 			opts = append(opts, bindSelectorOn(s.On))
 		}
 		opts = append(opts, bindQueryOptions(options)...)
-
 		tasks[i] = fn(s.Target, opts...)
-		selectorDesc[i] = fmt.Sprintf(
-			"%s (by=%s, on=%s, at_least=%v, retry_interval=%v)", s.Target, s.By, s.On, options.AtLeast, options.RetryInterval)
 	}
-	tasks = append(tasks, printf("%s %s", desc, strings.Join(selectorDesc, ",")))
 	return tasks
+}
+
+func printSelector(desc string, sels []*model.Selector, options *model.Options) Task {
+	selectorDesc := make([]string, len(sels))
+	var opts string
+	if options != nil {
+		opts = fmt.Sprintf(" at %v/%v", options.AtLeast, options.RetryInterval)
+	}
+	for i, s := range sels {
+		selectorDesc[i] = fmt.Sprintf("%s (%s, on=%s%v)", s.Target, s.By, s.On, opts)
+	}
+	return printf("%s %s", desc, strings.Join(selectorDesc, ","))
 }
 
 func bindSelectorBy(s model.SelectorBy) chromedp.QueryOption {
@@ -249,7 +271,10 @@ func usingVariable(name string, fn usingVariableFunc) chromedp.Action {
 		res := mustAutomationResult(c)
 		var msg json.RawMessage
 		res.Outputs[name] = &msg
-		return fn(&msg).Do(c)
+		err := fn(&msg).Do(c)
+
+		evalContextFrom(c).Variables[name] = umarshalData(msg)
+		return err
 	})
 }
 
@@ -264,6 +289,9 @@ func usingStringVariable(name string, fn usingStringVariableFunc) chromedp.Actio
 		msg, _ = json.Marshal(str)
 
 		res.Outputs[name] = &msg
+
+		v, _ := gocty.ToCtyValue(&str, cty.String)
+		evalContextFrom(c).Variables[name] = v
 
 		return err
 	})
