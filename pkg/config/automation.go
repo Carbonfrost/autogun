@@ -55,6 +55,9 @@ var (
 				Type: "send_keys",
 			},
 			{
+				Type: "set_value",
+			},
+			{
 				Type: "wait_visible",
 			},
 			{
@@ -88,6 +91,7 @@ var (
 		"navigate_forward": taskMapping(decodeNavigateForwardBlock),
 		"screenshot":       taskMapping(decodeScreenshotBlock),
 		"send_keys":        taskMapping(decodeSendKeysBlock),
+		"set_value":        taskMapping(decodeSetValueBlock),
 		"reload":           taskMapping(decodeReloadBlock),
 		"sleep":            taskMapping(decodeSleepBlock),
 		"stop":             taskMapping(decodeStopBlock),

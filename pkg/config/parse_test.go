@@ -140,6 +140,19 @@ var _ = Describe("LoadFile", func() {
 					}))),
 			})),
 
+			Entry("set_value", "set_value.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"1": And(
+					BeAssignableToTypeOf(&config.SetValue{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Selector": Equal("#grape"),
+						"Value":    WithTransform(toString, Equal("hello world")),
+						"Options": PointTo(MatchFields(IgnoreExtras, Fields{
+							"AtLeast":       PointTo(Equal(2)),
+							"RetryInterval": PointTo(Equal(5 * time.Minute)),
+						})),
+					}))),
+			})),
+
 			Entry("wait_visible", "wait_visible.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"1": And(
 					BeAssignableToTypeOf(&config.WaitVisible{}),

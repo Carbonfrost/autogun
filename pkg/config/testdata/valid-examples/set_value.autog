@@ -1,0 +1,15 @@
+automation "set_value" {
+  navigate {
+    url = "https://example.com"
+  }
+
+  set_value {
+    selector = "#grape"
+    value    = "hello world"
+
+    options {
+      retry_interval = "5m"
+      at_least       = 2
+    }
+  }
+}

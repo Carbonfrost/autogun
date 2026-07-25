@@ -44,6 +44,7 @@ var _ = Describe("Exprs", func() {
 		Entry(nil, "screenshot"),
 		Entry(nil, "select"),
 		Entry(nil, "send_keys"),
+		Entry(nil, "set_value"),
 		Entry(nil, "sleep"),
 		Entry(nil, "stop"),
 		Entry(nil, "title"),

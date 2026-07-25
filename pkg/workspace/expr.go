@@ -170,6 +170,18 @@ func Exprs() []*expr.Expr {
 			Evaluate: expr.BindEvaluator(SendKeys, bind.String("keys")),
 		},
 		{
+			Name:     "set_value", // -set_value VALUE
+			HelpText: "set the {VALUE} of the selected element",
+			Args: []*cli.Arg{
+				{
+					Name:  "value",
+					Value: new(string),
+					NArg:  1,
+				},
+			},
+			Evaluate: expr.BindEvaluator(SetValue, bind.String("value")),
+		},
+		{
 			Name:     "wait_visible", // -wait_visible
 			HelpText: "wait for the selected element to become visible",
 			Evaluate: WaitVisible(),
@@ -316,6 +328,17 @@ func SendKeys(keys string) expr.Evaluator {
 			Selectors: selectors,
 			Options:   opts,
 			Keys:      model.ExpressionFromHCL(keysExp),
+		}
+	})
+}
+
+func SetValue(value string) expr.Evaluator {
+	valueExp, _ := parseHCL(value)
+	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+		return &model.SetValue{
+			Selectors: selectors,
+			Options:   opts,
+			Value:     model.ExpressionFromHCL(valueExp),
 		}
 	})
 }

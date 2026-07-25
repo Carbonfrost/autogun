@@ -37,6 +37,7 @@ var _ = Describe("FromConfig", func() {
 			Entry("reload", new(config.Reload), new(model.Reload)),
 			Entry("screenshot", new(config.Screenshot), new(model.Screenshot)),
 			Entry("send_keys", new(config.SendKeys), new(model.SendKeys)),
+			Entry("set_value", new(config.SetValue), new(model.SetValue)),
 			Entry("sleep", new(config.Sleep), new(model.Sleep)),
 			Entry("stop", new(config.Stop), new(model.Stop)),
 			Entry("title", new(config.Title), new(model.Title)),

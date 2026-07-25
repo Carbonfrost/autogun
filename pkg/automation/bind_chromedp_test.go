@@ -54,6 +54,7 @@ var _ = Describe("Bind", func() {
 			Entry("reload", new(model.Reload)),
 			Entry("screenshot", new(model.Screenshot)),
 			Entry("send_keys", new(model.SendKeys)),
+			Entry("set_value", new(model.SetValue)),
 			Entry("sleep", new(model.Sleep)),
 			Entry("stop", new(model.Stop)),
 			Entry("title", new(model.Title)),
