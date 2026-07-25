@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
 	"github.com/Carbonfrost/autogun/pkg/model"
@@ -64,6 +65,9 @@ func (d *Driver) buildAutomation(m *model.Automation) (*Automation, error) {
 			if err != nil {
 				return nil, err
 			}
+			if desc := describe(t); desc != "" {
+				tsk = tasks(Print(desc), tsk)
+			}
 			actions = append(actions, tsk)
 		}
 	}
@@ -72,6 +76,62 @@ func (d *Driver) buildAutomation(m *model.Automation) (*Automation, error) {
 		Name:  m.Name,
 		Tasks: actions,
 	}, nil
+}
+
+func describe(task model.Task) string {
+	switch t := task.(type) {
+	case *model.Navigate:
+		return fmt.Sprintf("Navigate to %q", t.URL)
+	case *model.NavigateForward:
+		return "Navigate forward"
+	case *model.NavigateBack:
+		return "Navigate back"
+	case *model.WaitVisible:
+		return describeSelector("Wait until visible", t.Selectors, t.Options)
+	case *model.Click:
+		return describeSelector("Click", t.Selectors, t.Options)
+	case *model.DoubleClick:
+		return describeSelector("Double click", t.Selectors, t.Options)
+	case *model.Blur:
+		return describeSelector("Blur", t.Selectors, t.Options)
+	case *model.Clear:
+		return describeSelector("Clear", t.Selectors, t.Options)
+	case *model.SendKeys:
+		return describeSelector("Send keys", t.Selectors, t.Options)
+	case *model.Sleep:
+		return fmt.Sprintf("Sleep %v", t.Duration)
+	case *model.Reload:
+		return "Reload"
+	case *model.Stop:
+		return "Stop"
+	case *model.Screenshot:
+		if len(t.Selectors) == 0 {
+			return "Capture screenshot"
+		}
+		return describeSelector("Capture screenshot", t.Selectors, t.Options)
+	case *model.Eval:
+		return fmt.Sprintf("Evaluate script `%s'", t.Name)
+	case *model.Title:
+		return fmt.Sprintf("Extract title into variable `%s'", t.Name)
+	case *model.InnerHTML:
+		return describeSelector(fmt.Sprintf("Extract inner HTML into variable `%s'", t.Name), t.Selectors, t.Options)
+	case *model.Version:
+		return "Get browser version"
+	default:
+		return ""
+	}
+}
+
+func describeSelector(desc string, sels []*model.Selector, options *model.Options) string {
+	selectorDesc := make([]string, len(sels))
+	var opts string
+	if options != nil {
+		opts = fmt.Sprintf(" at %v/%v", options.AtLeast, options.RetryInterval)
+	}
+	for i, s := range sels {
+		selectorDesc[i] = fmt.Sprintf("%s (%s, on=%s%v)", s.Target, s.By, s.On, opts)
+	}
+	return fmt.Sprintf("%s %s", desc, strings.Join(selectorDesc, ","))
 }
 
 func (d *Driver) flow(name string) Task {
