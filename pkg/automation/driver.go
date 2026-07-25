@@ -20,6 +20,7 @@ type Driver struct {
 	allocator   *Allocator
 	protocol    Protocol
 	model       *model.Model
+	logging     bool
 }
 
 // Automation get the automation by name
@@ -65,8 +66,10 @@ func (d *Driver) buildAutomation(m *model.Automation) (*Automation, error) {
 			if err != nil {
 				return nil, err
 			}
-			if desc := describe(t); desc != "" {
-				tsk = tasks(Print(desc), tsk)
+			if d.logging {
+				if desc := describe(t); desc != "" {
+					tsk = tasks(Print(desc), tsk)
+				}
 			}
 			actions = append(actions, tsk)
 		}

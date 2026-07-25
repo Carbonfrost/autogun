@@ -128,6 +128,14 @@ func WithProtocol(p Protocol) Option {
 	})
 }
 
+// WithLogging enables logging of a generic, human-readable description of each
+// task before it runs. When disabled, the descriptive log task is omitted.
+func WithLogging(v bool) Option {
+	return optionFunc(func(a *Driver) {
+		a.logging = v
+	})
+}
+
 type optionFunc func(*Driver)
 
 func (f optionFunc) apply(a *Driver) {

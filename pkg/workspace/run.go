@@ -106,6 +106,7 @@ func runSpec(ctx *cli.Context, c *RunParams) error {
 		mo,
 		automation.WithProtocol(automation.ProtocolChromedp),
 		automation.WithAllocator(ws.EnsureAllocator()),
+		automation.WithLogging(true), // TODO Control logging level
 	)
 	if err != nil {
 		return err
