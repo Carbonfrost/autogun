@@ -51,7 +51,7 @@ func Bind(m *model.Model, opts ...Option) (*Driver, error) {
 	// TODO Don't eagerly build these automations; should be handled
 	// within Driver.flow and possibly cache
 	for _, auto := range m.Automations {
-		automations[auto.Name], err = b.buildAutomation(auto)
+		automations[auto.Name], err = b.buildAutomation(nil, auto)
 		if err != nil {
 			return nil, err
 		}

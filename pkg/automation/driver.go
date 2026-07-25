@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/Carbonfrost/autogun/pkg/config"
@@ -39,23 +40,24 @@ func (d *Driver) Execute(ctx context.Context, auto *model.Automation) (*Result, 
 	}
 	defer cancel()
 
-	var emulate Task = TaskFunc(nil)
-	if dev, ok := d.allocator.resolveDevice(); ok {
-		fmt.Fprintf(os.Stderr, "Emulating device %s (%s)\n", dev.Name, d.allocator.DeviceID)
-		emulate = chromedp.Emulate(bindDevice(dev))
+	var setup []model.Task
+	if d.allocator.DeviceID != "" {
+		setup = append(setup, &model.Emulate{
+			DeviceID: d.allocator.DeviceID,
+		})
 	}
 
-	a, err := d.buildAutomation(auto)
+	a, err := d.buildAutomation(setup, auto)
 	if err != nil {
 		return nil, err
 	}
 
-	return res, chromedp.Run(ctx, emulate, a)
+	return res, chromedp.Run(ctx, a)
 }
 
-func (d *Driver) buildAutomation(m *model.Automation) (*Automation, error) {
+func (d *Driver) buildAutomation(setup []model.Task, m *model.Automation) (*Automation, error) {
 	actions := make([]Task, 0)
-	for _, t := range m.Tasks {
+	for _, t := range slices.Concat(setup, m.Tasks) {
 		switch task := t.(type) {
 		case *model.Flow:
 			actions = append(actions, d.flow(task.Name))
@@ -164,6 +166,6 @@ func (d *Driver) runSource(source string) Task {
 		}
 
 		// TODO Assumes one automation per file which may not be true
-		return d.buildAutomation(model.FromConfig(file.Automations[0]))
+		return d.buildAutomation(nil, model.FromConfig(file.Automations[0]))
 	})
 }
