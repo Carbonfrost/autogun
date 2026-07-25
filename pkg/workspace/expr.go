@@ -125,6 +125,19 @@ func Exprs() []*expr.Expr {
 			Evaluate: expr.BindEvaluator(Select, bind.Value[[]*model.Selector]("selectors")),
 		},
 		{
+			Name:     "name", // -name NAME
+			HelpText: "set the name or filename applied to subsequent operations",
+			Args: []*cli.Arg{
+				{
+					Name:      "name",
+					Value:     new(string),
+					NArg:      1,
+					UsageText: "NAME",
+				},
+			},
+			Evaluate: expr.BindEvaluator(Name, bind.String("name")),
+		},
+		{
 			Name:     "blur", // -blur
 			HelpText: "blur the selected element",
 			Evaluate: Blur(),
@@ -232,14 +245,15 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 		}
 	}
 
-	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
+	return withQuery(func(q *AutomationQuery) error {
+		selectors := q.Selectors
 		if local != nil {
 			selectors = local
 		}
 
 		var localOpts model.Options
-		if opts != nil {
-			localOpts = *opts
+		if q.Options != nil {
+			localOpts = *q.Options
 			if s.RetryInterval != nil {
 				localOpts.RetryInterval = s.RetryInterval
 			}
@@ -247,18 +261,26 @@ func Screenshot(s *ScreenshotArgs) expr.Evaluator {
 				localOpts.AtLeast = s.AtLeast
 			}
 		}
-		return &model.Screenshot{
-			Name:      cmp.Or(s.File, "screenshot.png"),
+		appendTask(q.Automation, &model.Screenshot{
+			Name:      cmp.Or(s.File, q.Name, "screenshot.png"),
 			Scale:     scale,
 			Selectors: selectors,
 			Options:   &localOpts,
-		}
+		})
+		return nil
 	})
 }
 
 func Select(set []*model.Selector) expr.Evaluator {
 	return withQuery(func(q *AutomationQuery) error {
 		q.Selectors = set
+		return nil
+	})
+}
+
+func Name(name string) expr.Evaluator {
+	return withQuery(func(q *AutomationQuery) error {
+		q.Name = name
 		return nil
 	})
 }
@@ -319,9 +341,12 @@ func Flow(name string) expr.Evaluator {
 }
 
 func Eval(script string) expr.Evaluator {
-	return wrapTaskAsEvaluator(&model.Eval{
-		Script: script,
-		Name:   "_1",
+	return withQuery(func(q *AutomationQuery) error {
+		appendTask(q.Automation, &model.Eval{
+			Script: script,
+			Name:   cmp.Or(q.Name, "_1"),
+		})
+		return nil
 	})
 }
 
@@ -346,12 +371,20 @@ func Stop() expr.Evaluator {
 }
 
 func Title(name string) expr.Evaluator {
-	return wrapTaskAsEvaluator(&model.Title{Name: name})
+	return withQuery(func(q *AutomationQuery) error {
+		appendTask(q.Automation, &model.Title{Name: cmp.Or(q.Name, name)})
+		return nil
+	})
 }
 
 func InnerHTML(name string) expr.Evaluator {
-	return wrapSelectorTask(func(selectors []*model.Selector, opts *model.Options) model.Task {
-		return &model.InnerHTML{Name: name, Selectors: selectors, Options: opts}
+	return withQuery(func(q *AutomationQuery) error {
+		appendTask(q.Automation, &model.InnerHTML{
+			Name:      cmp.Or(q.Name, name),
+			Selectors: q.Selectors,
+			Options:   q.Options,
+		})
+		return nil
 	})
 }
 

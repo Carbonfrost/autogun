@@ -34,6 +34,11 @@ type AutomationQuery struct {
 	// and propagated to each subsequent task that targets elements.
 	Selectors []*model.Selector
 	Options   *model.Options
+
+	// Name is the current name, updated by the -name expression and applied to
+	// each subsequent task that supports a name or filename (e.g. -eval, -title,
+	// -inner_html, -screenshot).
+	Name string
 }
 
 type RunParams struct {

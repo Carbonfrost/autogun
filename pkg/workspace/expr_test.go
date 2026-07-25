@@ -35,6 +35,7 @@ var _ = Describe("Exprs", func() {
 		Entry(nil, "doubleclick"),
 		Entry(nil, "eval"),
 		Entry(nil, "inner_html"),
+		Entry(nil, "name"),
 		Entry(nil, "navigate"),
 		Entry(nil, "back"),
 		Entry(nil, "forward"),
@@ -138,5 +139,81 @@ var _ = Describe("select propagation", func() {
 		Expect(shot.Selectors).To(Equal([]*model.Selector{
 			{Target: "fromset", By: model.ByQueryAll},
 		}))
+	})
+})
+
+var _ = Describe("name propagation", func() {
+
+	var evaluate = func(args ...string) []model.Task {
+		query := &workspace.AutomationQuery{Automation: &model.Automation{}}
+		app := &cli.App{
+			Name: "app",
+			Args: []*cli.Arg{
+				{
+					Name:  "sources",
+					Value: cli.List(),
+					NArg:  cli.TakeUntilNextFlag,
+				},
+				{
+					Name: "expression",
+					Value: &expr.Expression{
+						Exprs: workspace.Exprs(),
+					},
+					Options: cli.SortedExprs,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				e := c.Value("expression").(*expr.Expression)
+				return e.Evaluate(c, query)
+			},
+		}
+		err := app.RunContext(context.Background(), append([]string{"app", "."}, args...))
+		Expect(err).NotTo(HaveOccurred())
+		return query.Automation.Tasks
+	}
+
+	It("applies the name to a title task", func() {
+		tasks := evaluate("-name", "myname", "-title")
+		Expect(tasks).To(HaveLen(1))
+		Expect(tasks[0]).To(Equal(&model.Title{Name: "myname"}))
+	})
+
+	It("applies the name to an eval task", func() {
+		tasks := evaluate("-name", "myname", "-eval", "1+1")
+		Expect(tasks).To(HaveLen(1))
+		Expect(tasks[0]).To(Equal(&model.Eval{Name: "myname", Script: "1+1"}))
+	})
+
+	It("applies the name to an inner_html task", func() {
+		tasks := evaluate("-name", "myname", "-inner_html")
+		Expect(tasks).To(HaveLen(1))
+		Expect(tasks[0]).To(Equal(&model.InnerHTML{Name: "myname"}))
+	})
+
+	It("applies the name as the screenshot filename", func() {
+		tasks := evaluate("-name", "shot.png", "-screenshot")
+		Expect(tasks).To(HaveLen(1))
+		shot := tasks[0].(*model.Screenshot)
+		Expect(shot.Name).To(Equal("shot.png"))
+	})
+
+	It("lets the local screenshot file take precedence over the name", func() {
+		tasks := evaluate("-name", "fromname", "-screenshot", "file=local.png")
+		Expect(tasks).To(HaveLen(1))
+		shot := tasks[0].(*model.Screenshot)
+		Expect(shot.Name).To(Equal("local.png"))
+	})
+
+	It("propagates the name to each subsequent task", func() {
+		tasks := evaluate("-name", "shared", "-title", "-eval", "1")
+		Expect(tasks).To(HaveLen(2))
+		Expect(tasks[0]).To(Equal(&model.Title{Name: "shared"}))
+		Expect(tasks[1]).To(Equal(&model.Eval{Name: "shared", Script: "1"}))
+	})
+
+	It("falls back to the default name when -name is not used", func() {
+		tasks := evaluate("-title")
+		Expect(tasks).To(HaveLen(1))
+		Expect(tasks[0]).To(Equal(&model.Title{Name: "title"}))
 	})
 })
