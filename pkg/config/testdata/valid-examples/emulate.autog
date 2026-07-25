@@ -1,0 +1,18 @@
+automation "emulate" {
+  emulate {
+    device = "iPhone12"
+  }
+
+  emulate {
+    device {
+      name       = "Custom Phone"
+      user_agent = "Mozilla/5.0"
+      width      = 390
+      height     = 844
+      scale      = 3.0
+      landscape  = false
+      mobile     = true
+      touch      = true
+    }
+  }
+}

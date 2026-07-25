@@ -69,6 +69,18 @@ func bindTask(task model.Task) chromedp.Action {
 				return chromedp.SetValue(sel, value, opts...)
 			}, t.Selectors, t.Options), nil
 		})
+	case *model.Emulate:
+		return taskThunk(func(c context.Context) (Task, error) {
+			dev := t.Device
+			if dev == nil {
+				d, ok := model.LookupDevice(t.DeviceID)
+				if !ok {
+					return nil, fmt.Errorf("unknown device %q", t.DeviceID)
+				}
+				dev = &d
+			}
+			return chromedp.Emulate(bindDevice(*dev)), nil
+		})
 	case *model.Sleep:
 		return chromedp.Sleep(t.Duration)
 	case *model.Reload:

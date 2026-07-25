@@ -73,6 +73,11 @@ func taskFromConfig(task config.Task) Task {
 			Selectors: selectorsFromConfig(t.Selector, t.Selectors),
 			Options:   optionsFromConfig(t.Options),
 		}
+	case *config.Emulate:
+		return &Emulate{
+			DeviceID: t.Device,
+			Device:   deviceFromConfig(t.DeviceConfig),
+		}
 	case *config.DoubleClick:
 		return &DoubleClick{
 			Selectors: selectorsFromConfig(t.Selector, t.Selectors),
@@ -140,6 +145,22 @@ func selectorFromConfig(s *config.Selector) *Selector {
 		Target: s.Target,
 		By:     SelectorBy(s.By),
 		On:     SelectorOn(s.On),
+	}
+}
+
+func deviceFromConfig(d *config.Device) *Device {
+	if d == nil {
+		return nil
+	}
+	return &Device{
+		Name:      d.Name,
+		UserAgent: d.UserAgent,
+		Width:     d.Width,
+		Height:    d.Height,
+		Scale:     d.Scale,
+		Landscape: d.Landscape,
+		Mobile:    d.Mobile,
+		Touch:     d.Touch,
 	}
 }
 

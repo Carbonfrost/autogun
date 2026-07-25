@@ -33,6 +33,7 @@ var _ = Describe("Exprs", func() {
 		Entry(nil, "clear"),
 		Entry(nil, "click"),
 		Entry(nil, "doubleclick"),
+		Entry(nil, "emulate"),
 		Entry(nil, "eval"),
 		Entry(nil, "inner_html"),
 		Entry(nil, "name"),

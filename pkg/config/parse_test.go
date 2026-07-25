@@ -62,6 +62,28 @@ var _ = Describe("LoadFile", func() {
 					}))),
 			})),
 
+			Entry("emulate", "emulate.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+				"0": And(
+					BeAssignableToTypeOf(&config.Emulate{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"Device": Equal("iPhone12"),
+					}))),
+				"1": And(
+					BeAssignableToTypeOf(&config.Emulate{}),
+					PointTo(MatchFields(IgnoreExtras, Fields{
+						"DeviceConfig": PointTo(MatchFields(IgnoreExtras, Fields{
+							"Name":      Equal("Custom Phone"),
+							"UserAgent": Equal("Mozilla/5.0"),
+							"Width":     Equal(int64(390)),
+							"Height":    Equal(int64(844)),
+							"Scale":     Equal(3.0),
+							"Landscape": Equal(false),
+							"Mobile":    Equal(true),
+							"Touch":     Equal(true),
+						})),
+					}))),
+			})),
+
 			Entry("blur", "blur.autog", MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
 				"1": And(
 					BeAssignableToTypeOf(&config.Blur{}),

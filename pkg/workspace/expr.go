@@ -182,6 +182,18 @@ func Exprs() []*expr.Expr {
 			Evaluate: expr.BindEvaluator(SetValue, bind.String("value")),
 		},
 		{
+			Name:     "emulate", // -emulate DEVICE
+			HelpText: "emulate the named {DEVICE}",
+			Args: []*cli.Arg{
+				{
+					Name:  "device",
+					Value: new(string),
+					NArg:  1,
+				},
+			},
+			Evaluate: expr.BindEvaluator(Emulate, bind.String("device")),
+		},
+		{
 			Name:     "wait_visible", // -wait_visible
 			HelpText: "wait for the selected element to become visible",
 			Evaluate: WaitVisible(),
@@ -341,6 +353,10 @@ func SetValue(value string) expr.Evaluator {
 			Value:     model.ExpressionFromHCL(valueExp),
 		}
 	})
+}
+
+func Emulate(device string) expr.Evaluator {
+	return wrapTaskAsEvaluator(&model.Emulate{DeviceID: device})
 }
 
 func WaitVisible() expr.Evaluator {

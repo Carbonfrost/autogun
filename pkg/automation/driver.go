@@ -103,6 +103,11 @@ func describe(task model.Task) string {
 		return describeSelector("Send keys", t.Selectors, t.Options)
 	case *model.SetValue:
 		return describeSelector("Set value", t.Selectors, t.Options)
+	case *model.Emulate:
+		if t.Device != nil {
+			return fmt.Sprintf("Emulate device %s", t.Device.Name)
+		}
+		return fmt.Sprintf("Emulate device %s", t.DeviceID)
 	case *model.Sleep:
 		return fmt.Sprintf("Sleep %v", t.Duration)
 	case *model.Reload:

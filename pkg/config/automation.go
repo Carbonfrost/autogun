@@ -52,6 +52,9 @@ var (
 				Type: "double_click",
 			},
 			{
+				Type: "emulate",
+			},
+			{
 				Type: "send_keys",
 			},
 			{
@@ -84,6 +87,7 @@ var (
 		"clear":            taskMapping(decodeClearBlock),
 		"click":            taskMapping(decodeClickBlock),
 		"double_click":     taskMapping(decodeDoubleClickBlock),
+		"emulate":          taskMapping(decodeEmulateBlock),
 		"eval":             taskMapping(decodeEvalBlock),
 		"inner_html":       taskMapping(decodeInnerHTMLBlock),
 		"navigate":         taskMapping(decodeNavigateBlock),

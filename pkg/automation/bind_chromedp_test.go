@@ -44,6 +44,7 @@ var _ = Describe("Bind", func() {
 			},
 			Entry("click", new(model.Click)),
 			Entry("double_click", new(model.DoubleClick)),
+			Entry("emulate", new(model.Emulate)),
 			Entry("blur", new(model.Blur)),
 			Entry("clear", new(model.Clear)),
 			Entry("eval", new(model.Eval)),

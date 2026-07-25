@@ -88,6 +88,14 @@ type SetValue struct {
 	Value     hcl.Expression
 }
 
+type Emulate struct {
+	DeclRange hcl.Range
+	// Device names a built-in device to emulate.
+	Device string
+	// DeviceConfig defines a device inline, initializing all of its attributes.
+	DeviceConfig *Device
+}
+
 type DoubleClick struct {
 	DeclRange hcl.Range
 	Selector  string
@@ -219,6 +227,15 @@ var (
 		Blocks: []hcl.BlockHeaderSchema{
 			{Type: "selector"},
 			{Type: "options"},
+		},
+	}
+
+	emulateBlockSchema = &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "device"},
+		},
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "device"},
 		},
 	}
 
@@ -440,6 +457,39 @@ func decodeSetValueBlock(block *hcl.Block) (*SetValue, hcl.Diagnostics) {
 	)
 }
 
+func decodeEmulateBlock(block *hcl.Block) (*Emulate, hcl.Diagnostics) {
+	f := new(Emulate)
+	return reduceTask(
+		f,
+		block,
+		supportsDeclRange(&f.DeclRange),
+		supportsPartialContentSchema(
+			emulateBlockSchema,
+			withAttribute("device", &f.Device),
+			supportsDeviceBlock(&f.DeviceConfig),
+		),
+		requiresExclusiveDevice(f),
+	)
+}
+
+// requiresExclusiveDevice reports an error when both the device attribute and
+// the device block are used together within an emulate block.
+func requiresExclusiveDevice(f *Emulate) mapper {
+	return func(block *hcl.Block) hcl.Diagnostics {
+		if f.Device != "" && f.DeviceConfig != nil {
+			return hcl.Diagnostics{
+				{
+					Severity: hcl.DiagError,
+					Summary:  "Conflicting device specification",
+					Detail:   `The "device" attribute and "device" block cannot be used together.`,
+					Subject:  f.DeclRange.Ptr(),
+				},
+			}
+		}
+		return nil
+	}
+}
+
 func decodeClearBlock(block *hcl.Block) (*Clear, hcl.Diagnostics) {
 	f := new(Clear)
 	return reduceTask(
@@ -544,6 +594,7 @@ func (*Blur) taskSigil()            {}
 func (*Clear) taskSigil()           {}
 func (*Click) taskSigil()           {}
 func (*DoubleClick) taskSigil()     {}
+func (*Emulate) taskSigil()         {}
 func (*Eval) taskSigil()            {}
 func (*InnerHTML) taskSigil()       {}
 func (*Navigate) taskSigil()        {}

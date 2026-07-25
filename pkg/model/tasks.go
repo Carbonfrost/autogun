@@ -65,6 +65,15 @@ type SetValue struct {
 	Value     Expression
 }
 
+type Emulate struct {
+	// DeviceID names a built-in device to emulate. It is ignored when Device
+	// is set.
+	DeviceID string
+	// Device defines a device inline. When nil, DeviceID is resolved against
+	// the built-in devices instead.
+	Device *Device
+}
+
 type DoubleClick struct {
 	Selectors []*Selector
 	Options   *Options
@@ -109,6 +118,7 @@ func (*Blur) taskSigil()            {}
 func (*Clear) taskSigil()           {}
 func (*Click) taskSigil()           {}
 func (*DoubleClick) taskSigil()     {}
+func (*Emulate) taskSigil()         {}
 func (*Eval) taskSigil()            {}
 func (*Flow) taskSigil()            {}
 func (*InnerHTML) taskSigil()       {}
