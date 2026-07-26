@@ -12,6 +12,7 @@ type Automation struct {
 	NameRange hcl.Range
 	Name      string
 	Tasks     []Task
+	Network   *Network
 }
 
 var (
@@ -115,6 +116,10 @@ func decodeAutomationBlock(block *hcl.Block) (*Automation, hcl.Diagnostics) {
 		supportsPartialContentSchema(
 			automationBlockSchema,
 			appendsTo(&f.Tasks, mappingTaskBlocks),
+		),
+		supportsPartialContentSchema(
+			automationNetworkSchema,
+			withNetworkBlock(&f.Network),
 		),
 	)
 }

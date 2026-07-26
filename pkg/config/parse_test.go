@@ -220,6 +220,46 @@ var _ = Describe("LoadFile", func() {
 		)
 	})
 
+	Describe("parse Network", func() {
+
+		DescribeTable("examples",
+			func(hclFile string, expected types.GomegaMatcher) {
+				res, err := validExample(hclFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(res.Automations[0].Network).To(expected)
+			},
+
+			Entry("network with download and log filters", "network.autog",
+				PointTo(MatchFields(IgnoreExtras, Fields{
+					"Filters": MatchElementsWithIndex(IndexIdentity, IgnoreExtras, Elements{
+						"0": PointTo(MatchFields(IgnoreExtras, Fields{
+							"Type": Equal("Image"),
+							"Response": PointTo(MatchFields(IgnoreExtras, Fields{
+								"URLs": ConsistOf("example.com/*.png", "example.com/*.jpg"),
+							})),
+							"Download": Not(BeNil()),
+							"Log":      BeNil(),
+						})),
+						"1": PointTo(MatchFields(IgnoreExtras, Fields{
+							"Type": Equal(""),
+							"Response": PointTo(MatchFields(IgnoreExtras, Fields{
+								"URLs": ConsistOf("cdn.example.com/*.css"),
+							})),
+							"Download": BeNil(),
+							"Log":      Not(BeNil()),
+						})),
+						"2": PointTo(MatchFields(IgnoreExtras, Fields{
+							"Type":     Equal(""),
+							"Response": BeNil(),
+							"Download": BeNil(),
+							"Log":      BeNil(),
+						})),
+					}),
+				})),
+			),
+		)
+	})
+
 	DescribeTable("error examples",
 		func(hclFile string, expected types.GomegaMatcher) {
 			_, diags := errExample(hclFile)

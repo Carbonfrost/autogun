@@ -1,0 +1,30 @@
+automation "network" {
+  navigate {
+    url = "https://example.com"
+  }
+
+  network {
+    filter {
+      type = "Image"
+
+      response {
+        url = [
+          "example.com/*.png",
+          "example.com/*.jpg",
+        ]
+      }
+
+      download {}
+    }
+
+    filter {
+      response {
+        url = ["cdn.example.com/*.css"]
+      }
+
+      log {}
+    }
+
+    filter {}
+  }
+}
