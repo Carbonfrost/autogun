@@ -15,12 +15,15 @@ import (
 type Result struct {
 	Outputs     map[string]*json.RawMessage
 	OutputFiles map[string]*[]byte
+
+	networkState *networkState
 }
 
 func newResult() *Result {
 	return &Result{
-		Outputs:     map[string]*json.RawMessage{},
-		OutputFiles: map[string]*[]byte{},
+		Outputs:      map[string]*json.RawMessage{},
+		OutputFiles:  map[string]*[]byte{},
+		networkState: newNetworkState(),
 	}
 }
 

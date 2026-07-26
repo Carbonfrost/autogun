@@ -27,9 +27,23 @@ func FromConfig(cfg *config.Automation) *Automation {
 	if cfg == nil {
 		return nil
 	}
+
 	tasks := make([]Task, 0, len(cfg.Tasks))
+
+	var networkWait Task
+	if cfg.Network != nil {
+		tasks = append(tasks, &StartNetworkFilter{
+			Network: cfg.Network,
+		})
+		networkWait = &StopNetworkFilter{}
+	}
+
 	for _, t := range cfg.Tasks {
 		tasks = append(tasks, taskFromConfig(t))
+	}
+
+	if networkWait != nil {
+		tasks = append(tasks, networkWait)
 	}
 	return &Automation{
 		Name:  cfg.Name,

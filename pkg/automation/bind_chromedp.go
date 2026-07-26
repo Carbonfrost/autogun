@@ -122,6 +122,11 @@ func bindTask(task model.Task) chromedp.Action {
 				return chromedp.InnerHTML(sel, str, opts...)
 			}, t.Selectors, t.Options)
 		})
+	case *model.StartNetworkFilter:
+		return bindNetworkFilterStart(t.Network)
+
+	case *model.StopNetworkFilter:
+		return bindNetworkFilterStop()
 
 	case *model.Version:
 		return printBrowserVersion(browser.GetVersion())

@@ -4,7 +4,11 @@
 
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/Carbonfrost/autogun/pkg/config"
+)
 
 // Task is the basis of a step within an automation. Each task type mirrors the
 // corresponding type in the config package, but without the HCL-specific
@@ -114,24 +118,34 @@ type Source struct {
 	Filename string
 }
 
-func (*Blur) taskSigil()            {}
-func (*Clear) taskSigil()           {}
-func (*Click) taskSigil()           {}
-func (*DoubleClick) taskSigil()     {}
-func (*Emulate) taskSigil()         {}
-func (*Eval) taskSigil()            {}
-func (*Flow) taskSigil()            {}
-func (*InnerHTML) taskSigil()       {}
-func (*Navigate) taskSigil()        {}
-func (*NavigateBack) taskSigil()    {}
-func (*NavigateForward) taskSigil() {}
-func (*Reload) taskSigil()          {}
-func (*Screenshot) taskSigil()      {}
-func (*SendKeys) taskSigil()        {}
-func (*SetValue) taskSigil()        {}
-func (*Sleep) taskSigil()           {}
-func (*Source) taskSigil()          {}
-func (*Stop) taskSigil()            {}
-func (*Title) taskSigil()           {}
-func (*Version) taskSigil()         {}
-func (*WaitVisible) taskSigil()     {}
+type StartNetworkFilter struct {
+	// TODO Remove dependency on configuration and provide a model which simplies it
+	Network *config.Network
+}
+
+type StopNetworkFilter struct {
+}
+
+func (*Blur) taskSigil()               {}
+func (*Clear) taskSigil()              {}
+func (*Click) taskSigil()              {}
+func (*DoubleClick) taskSigil()        {}
+func (*Emulate) taskSigil()            {}
+func (*Eval) taskSigil()               {}
+func (*Flow) taskSigil()               {}
+func (*InnerHTML) taskSigil()          {}
+func (*Navigate) taskSigil()           {}
+func (*NavigateBack) taskSigil()       {}
+func (*NavigateForward) taskSigil()    {}
+func (*Reload) taskSigil()             {}
+func (*Screenshot) taskSigil()         {}
+func (*SendKeys) taskSigil()           {}
+func (*SetValue) taskSigil()           {}
+func (*Sleep) taskSigil()              {}
+func (*Source) taskSigil()             {}
+func (*StartNetworkFilter) taskSigil() {}
+func (*Stop) taskSigil()               {}
+func (*StopNetworkFilter) taskSigil()  {}
+func (*Title) taskSigil()              {}
+func (*Version) taskSigil()            {}
+func (*WaitVisible) taskSigil()        {}
