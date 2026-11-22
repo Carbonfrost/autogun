@@ -34,7 +34,7 @@ func (s *SelectorSet) Value() []*model.Selector {
 // copying the By strategy to each. When By is unset, it defaults to
 // model.ByQueryAll.
 func (s *SelectorSet) Set(arg string) error {
-	for _, text := range strings.Split(arg, ",") {
+	for text := range strings.SplitSeq(arg, ",") {
 		s.Selectors = append(s.Selectors, &model.Selector{
 			Target: text,
 			By:     s.by(),
