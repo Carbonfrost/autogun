@@ -88,9 +88,9 @@ var _ = Describe("WindowSize", func() {
 				Action: func() {},
 			}
 
-			err := app.RunContext(context.Background(), []string{
+			err := app.RunContext(context.Background(),
 				"app", "--window-size", "1280x720",
-			})
+			)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(set.WindowSize).To(Equal(model.WindowSize{Width: 1280, Height: 720}))
@@ -108,9 +108,9 @@ var _ = Describe("WindowSize", func() {
 				Action: func() {},
 			}
 
-			err := app.RunContext(context.Background(), []string{
+			err := app.RunContext(context.Background(),
 				"app", "--window-size", "nonsense",
-			})
+			)
 
 			Expect(err).To(HaveOccurred())
 		})

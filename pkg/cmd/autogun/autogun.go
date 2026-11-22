@@ -17,7 +17,7 @@ import (
 const versionTemplate = "{{ .App.Name }}, version {{ .App.Version }}{{ ExtendedVersionInfo }}\n"
 
 func Run(args []string) {
-	NewApp().Run(args)
+	NewApp().Run(args...)
 }
 
 func NewApp() *cli.App {

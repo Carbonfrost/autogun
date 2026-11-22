@@ -14,7 +14,7 @@ import (
 	cli "github.com/Carbonfrost/joe-cli"
 	"github.com/Carbonfrost/joe-cli/extensions/bind"
 	"github.com/Carbonfrost/joe-cli/extensions/expr"
-	"github.com/Carbonfrost/joe-cli/extensions/structure"
+	"github.com/Carbonfrost/joe-cli/value/structure"
 )
 
 type ScreenshotArgs struct {

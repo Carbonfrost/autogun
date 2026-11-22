@@ -79,7 +79,7 @@ var _ = Describe("select propagation", func() {
 				return e.Evaluate(c, query)
 			},
 		}
-		err := app.RunContext(context.Background(), append([]string{"app", "."}, args...))
+		err := app.RunContext(context.Background(), append([]string{"app", "."}, args...)...)
 		Expect(err).NotTo(HaveOccurred())
 		return query.Automation.Tasks
 	}
@@ -169,7 +169,7 @@ var _ = Describe("name propagation", func() {
 				return e.Evaluate(c, query)
 			},
 		}
-		err := app.RunContext(context.Background(), append([]string{"app", "."}, args...))
+		err := app.RunContext(context.Background(), append([]string{"app", "."}, args...)...)
 		Expect(err).NotTo(HaveOccurred())
 		return query.Automation.Tasks
 	}

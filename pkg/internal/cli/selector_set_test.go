@@ -94,9 +94,9 @@ var _ = Describe("SelectorSet", func() {
 				Action: func() {},
 			}
 
-			err := app.RunContext(context.Background(), []string{
+			err := app.RunContext(context.Background(),
 				"app", "--selector", "button,input",
-			})
+			)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(set.Selectors).To(Equal([]*model.Selector{
@@ -119,9 +119,9 @@ var _ = Describe("SelectorSet", func() {
 				Action: func() {},
 			}
 
-			err := app.RunContext(context.Background(), []string{
+			err := app.RunContext(context.Background(),
 				"app", "--selector", "first", "--selector", "second,third",
-			})
+			)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(set.Selectors).To(Equal([]*model.Selector{
