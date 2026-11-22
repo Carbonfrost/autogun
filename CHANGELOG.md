@@ -1,5 +1,38 @@
 # Changelog
 
+## v0.4.0 (November 22, 2026)
+
+### New Features
+
+* Network filtering (e6565ac)
+* Network monitoring configuration (14f5130)
+* `Emulate` (a04159c)
+* `SetValue` (4e21ce8)
+* `-name` expression (60d6909)
+* Introduce conditional logging (f8ad469)
+* InnerHTML task, expression (f74e7de)
+* Introduce `-options` expr (5bc52be)
+* Introduce `-select` expr (fe582f8)
+* `SendKeys` (0f678c2)
+
+### Bug fixes and improvements
+
+* Introduce `WindowSize` parsing as flag `Value` and remove `WindowSize` to model (a56801c)
+* Add `SelectorSet` flag `Value` implementation for `model.Selector` (975f24d)
+* Remove chromedp emulate and use model (00247d6)
+* Refactoring and test improvements:
+    * Genericize task logging; make protocol specifically responsible for implementation and not logging (cd78264)
+    * Relocate run command into workspace (43c7343)
+    * Refactor to resolve automations via model instead of config deferral; Driver (7bba932)
+    * Expr tests (f8f0f3f)
+    * Refactor and improve task funcs binding in chromedp; tracing selectors (be1efbd)
+* Chores:
+    * Update dependent versions (26a1659, db6664d, 6103cc1)
+    * Update dependent versions (e91edaf)
+    * GitHub workflow configuration updates (280acef, f99a0ce, 708a3b1)
+    * Modernize (de9cc63)
+
+
 ## v0.3.0 (July 6, 2026)
 
 ### New Features
