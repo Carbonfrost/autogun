@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/Carbonfrost/joe-cli v0.25.0
-	github.com/chromedp/cdproto v0.0.0-20260804232424-e85f50dbfd32
+	github.com/chromedp/cdproto v0.160.8
 	github.com/chromedp/chromedp v0.16.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/onsi/ginkgo/v2 v2.34.0
@@ -22,7 +22,6 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v17 v17.0.1 // indirect
-	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/cristalhq/acmd v0.12.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
